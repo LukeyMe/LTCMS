@@ -1076,6 +1076,11 @@ def main():
 
     # Sidebar controls
     with st.sidebar:
+        st.sidebar.image(
+        "https://raw.githubusercontent.com/LukeyMe/LTCMS/main/LFpng.png",
+        use_container_width=True,
+        caption="Lipa Technical Center"
+    )
         st.header("🔧 System Controls")
         if st.button("➕ Add New Equipment", use_container_width=True):
             reset_all_modals()
