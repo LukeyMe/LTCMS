@@ -62,7 +62,7 @@
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
       "status": "Running",
-      "load_percentage": 80,
+      "load_percentage": 60,
       "last_updated": "2025-08-01 06:40:28.648660",
       "parameters": {
         "min_temperature": -65.0,
@@ -568,24 +568,6 @@
         },
         "status": "In Progress",
         "created_at": "2025-08-01 05:51:59"
-      },
-      {
-        "schedule_id": "60b3cd76-193d-4ba2-8435-431e7dc66a71",
-        "test_id": "213800",
-        "user": "Bernadette",
-        "start_date": "2025-07-21",
-        "end_date": "2025-07-25",
-        "load_percentage": 20,
-        "priority": "High",
-        "description": "100cycles(CCF_0437.250WR) 8 boards ",
-        "test_parameters": {
-          "min_temperature": -55.0,
-          "max_temperature": 125.0,
-          "dwell_time": 15.0,
-          "num_cycles": 100.0
-        },
-        "status": "In Progress",
-        "created_at": "2025-08-01 05:52:54"
       }
     ],
     "BMNew": []
