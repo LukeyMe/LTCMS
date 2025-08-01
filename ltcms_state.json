@@ -152,6 +152,18 @@
       "parameters": {
         "ambient_temperature": 25.0
       }
+    },
+    "Weiss WK150  (22600392)": {
+      "name": "Weiss Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:10:52.569234",
+      "parameters": {
+        "ambient_temperature": 85.0,
+        "relative_humidity": 85.0
+      }
     }
   },
   "schedules": {
