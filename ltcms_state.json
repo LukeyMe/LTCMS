@@ -34,7 +34,7 @@
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
       "status": "Scheduled",
-      "load_percentage": 50,
+      "load_percentage": 60,
       "last_updated": "2025-08-01 05:40:52.280240",
       "parameters": {
         "min_temperature": -55.0,
@@ -491,6 +491,24 @@
         },
         "status": "Scheduled",
         "created_at": "2025-08-01 05:46:42"
+      },
+      {
+        "schedule_id": "2a66a351-23bc-4f36-9851-ac63b74321c4",
+        "test_id": "213901",
+        "user": "Nathan",
+        "start_date": "2025-07-18",
+        "end_date": "2025-09-01",
+        "load_percentage": 10,
+        "priority": "High",
+        "description": "1000cycles(526 80A long-term) 5 boards ten pos b2b",
+        "test_parameters": {
+          "min_temperature": -55.0,
+          "max_temperature": 125.0,
+          "dwell_time": 15.0,
+          "num_cycles": 1000.0
+        },
+        "status": "Scheduled",
+        "created_at": "2025-08-01 05:48:35"
       }
     ],
     "Vibration": [],
