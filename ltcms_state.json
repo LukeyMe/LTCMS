@@ -33,8 +33,8 @@
       "name": "Votsch Thermal Shock Chamber",
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
-      "status": "Running",
-      "load_percentage": 70,
+      "status": "Scheduled",
+      "load_percentage": 30,
       "last_updated": "2025-08-01 05:40:52.280240",
       "parameters": {
         "min_temperature": -55.0,
@@ -444,7 +444,7 @@
         "user": "Joel",
         "start_date": "2025-06-23",
         "end_date": "2025-08-07",
-        "load_percentage": 50,
+        "load_percentage": 10,
         "priority": "High",
         "description": "0685055.MXEP(1000cycles) 5 boards ten pos b2b",
         "test_parameters": {
