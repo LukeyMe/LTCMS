@@ -923,30 +923,22 @@ def test_status_modal():
         })
     df = pd.DataFrame(df_data)
 
-    # Display dataframe with native scrolling and row selection
-    st.markdown("Click on a row to select a test for editing:")
-    selection = st.dataframe(
-        df.drop(columns=["Index"]),
-        height=300,  # Adjust height as needed for scrolling
-        selection_mode="single-row"
+    # Display dataframe with native scrolling
+    st.dataframe(df.drop(columns=["Index"]), height=300)  # Height limits the visible area, enables scrolling
+
+    # Select a test to edit
+    selected_test_key = st.selectbox(
+        "Select a test to edit or delete",
+        options=df["Index"],
+        format_func=lambda x: f"{df[df['Index'] == x]['Equipment'].values[0]} - {df[df['Index'] == x]['Test ID'].values[0]}"
     )
-    selected_rows = selection["selection"]["rows"]
 
-    # Handle selection
-    if selected_rows:
-        # Get the selected row's index and unique key
-        selected_row_index = selected_rows[0]
-        selected_test_key = df.iloc[selected_row_index]["Index"]
-
-        # Find the corresponding test
-        selected_schedule = next(
-            s for s in all_schedules
-            if f"{s['equipment_id']}_{s['schedule_index']}" == selected_test_key
-        )
+    if selected_test_key:
+        selected_schedule = next(s for s in all_schedules if f"{s['equipment_id']}_{s['schedule_index']}" == selected_test_key)
         eq_id = selected_schedule["equipment_id"]
         i = selected_schedule["schedule_index"]
 
-        # Display editing fields
+        # Editing fields
         st.markdown("#### Edit Selected Test")
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -976,7 +968,6 @@ def test_status_modal():
                 elif new_start_date > new_end_date:
                     st.error("Start Date cannot be after End Date.")
                 else:
-                    # Update the schedule data
                     st.session_state.schedules[eq_id][i].update({
                         "test_id": new_test_id,
                         "user": new_user,
@@ -985,10 +976,8 @@ def test_status_modal():
                         "status": new_status,
                         "load_percentage": new_load
                     })
-                    # Recalculate equipment load percentage
                     remaining_load = sum(s["load_percentage"] for s in st.session_state.schedules[eq_id])
                     st.session_state.equipment_data[eq_id]["load_percentage"] = min(remaining_load, 100)
-                    # Update equipment status if needed
                     if not any(s["status"] in ["Scheduled", "In Progress"] for s in st.session_state.schedules[eq_id]):
                         st.session_state.equipment_data[eq_id]["status"] = "Idle"
                     elif new_status in ["Scheduled", "In Progress"]:
@@ -1001,7 +990,6 @@ def test_status_modal():
 
         with col_delete:
             if st.button("🗑️ Delete"):
-                # Delete the selected test
                 removed = st.session_state.schedules[eq_id].pop(i)
                 remaining_load = sum(s["load_percentage"] for s in st.session_state.schedules[eq_id])
                 st.session_state.equipment_data[eq_id]["load_percentage"] = remaining_load
@@ -1010,8 +998,10 @@ def test_status_modal():
                 save_app_state()
                 st.success(f"Test {removed['test_id']} deleted.")
                 st.rerun()
-    else:
-        st.info("Select a test to edit.")
+
+    if st.button("❌ Close", use_container_width=True):
+        st.session_state.show_test_status = False
+        st.rerun()
 
     # Close button
     if st.button("❌ Close", use_container_width=True):
