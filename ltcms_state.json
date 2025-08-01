@@ -224,6 +224,18 @@
         "ambient_temperature": 55.0,
         "relative_humidity": 85.0
       }
+    },
+    "SH-241 (MD-375)": {
+      "name": "Espec Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:16:23.857485",
+      "parameters": {
+        "ambient_temperature": 30.0,
+        "relative_humidity": 87.0
+      }
     }
   },
   "schedules": {
