@@ -90,8 +90,8 @@
       "name": "Blue-M Chamber (New)",
       "type": "TEMP_OVENS",
       "location": "",
-      "status": "Idle",
-      "load_percentage": 0,
+      "status": "Scheduled",
+      "load_percentage": 100,
       "last_updated": "2025-08-01 00:53:10.785170",
       "parameters": {
         "ambient_temperature": 150.0
@@ -228,6 +228,23 @@
         },
         "status": "Scheduled",
         "created_at": "2025-08-01 03:37:20"
+      }
+    ],
+    "BMNew": [
+      {
+        "schedule_id": "f43ab11a-5c6a-4430-a11b-d1e9b650d820",
+        "test_id": "ETR 123456",
+        "user": "AEEE",
+        "start_date": "2025-08-01",
+        "end_date": "2025-08-02",
+        "load_percentage": 100,
+        "priority": "High",
+        "description": "",
+        "test_parameters": {
+          "ambient_temperature": 125.0
+        },
+        "status": "Scheduled",
+        "created_at": "2025-08-01 04:17:42"
       }
     ]
   }
