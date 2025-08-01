@@ -272,6 +272,18 @@
         "ambient_temperature": 25.0,
         "relative_humidity": 50.0
       }
+    },
+    "Espec ESX-3CA (MD-246)": {
+      "name": "Espec Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:20:49.832851",
+      "parameters": {
+        "ambient_temperature": 85.0,
+        "relative_humidity": 85.0
+      }
     }
   },
   "schedules": {
