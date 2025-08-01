@@ -106,9 +106,9 @@ div[data-testid="stModal"],
 div[data-testid="stModal"] > div[role="dialog"],
 div[role="dialog"] {
     width: 85vw !important;
-    max-width: 180vw !important;
+    max-width: 100vw !important;
     height: 85vh !important;
-    max-height: 85vh !important;
+    max-height: 100vh !important;
     margin: auto !important;
     padding: 0 !important;
     border-radius: 0.5 !important;
@@ -117,7 +117,7 @@ div[role="dialog"] {
     right: 0 !important;
     bottom: 0 !important;
     position: fixed !important;
-    overflow: hidden !important;
+    overflow: scroll !important;
     display: flex !important;
     flex-direction: column !important;
 }
