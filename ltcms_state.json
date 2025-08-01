@@ -33,7 +33,7 @@
       "name": "Votsch Thermal Shock Chamber",
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
-      "status": "Running",
+      "status": "Scheduled",
       "load_percentage": 60,
       "last_updated": "2025-08-01 05:53:48.249392",
       "parameters": {
@@ -417,7 +417,7 @@
           "dwell_time": 15.0,
           "num_cycles": 1000.0
         },
-        "status": "Scheduled",
+        "status": "In Progress",
         "created_at": "2025-08-01 05:42:24"
       },
       {
