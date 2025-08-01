@@ -188,6 +188,18 @@
         "ambient_temperature": 65.0,
         "relative_humidity": 95.0
       }
+    },
+    "SM5.5C (MD-230)": {
+      "name": "Thermotron SM5.5C Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Idle",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:14:01.325666",
+      "parameters": {
+        "ambient_temperature": 25.0,
+        "relative_humidity": 50.0
+      }
     }
   },
   "schedules": {
