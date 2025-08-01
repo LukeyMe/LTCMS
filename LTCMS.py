@@ -580,9 +580,9 @@ def all_schedules_modal():
         # Display schedules with delete option
         st.markdown("#### Schedule List")
 
-        # Start scrollable container with inline CSS
+        # Start scrollable container with enhanced inline CSS
         st.markdown(
-            '<div style="max-height: 60vh; overflow-y: auto; overflow-x: hidden; padding-right: 10px;">',
+            '<div style="max-height: 60vh !important; min-height: 200px; overflow-y: auto !important; overflow-x: hidden !important; padding-right: 15px; box-sizing: border-box; width: 100%;">',
             unsafe_allow_html=True
         )
 
@@ -976,9 +976,9 @@ def test_status_modal():
 
     st.markdown("---")
 
-    # Start scrollable container with inline CSS
+    # Start scrollable container with enhanced inline CSS
     st.markdown(
-        '<div style="max-height: 60vh; overflow-y: auto; overflow-x: hidden; padding-right: 10px;">',
+        '<div style="max-height: 60vh !important; min-height: 200px; overflow-y: auto !important; overflow-x: hidden !important; padding-right: 15px; box-sizing: border-box; width: 100%;">',
         unsafe_allow_html=True
     )
 
