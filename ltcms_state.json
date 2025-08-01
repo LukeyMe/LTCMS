@@ -6,11 +6,11 @@
       "location": "Laboratory Backside",
       "status": "Running",
       "load_percentage": 85,
-      "last_updated": "2025-07-30 12:40:29.593575",
+      "last_updated": "2025-08-01 04:16:24.337330",
       "parameters": {
         "min_temperature": -55.0,
         "max_temperature": 125.0,
-        "dwell_time": 30.0,
+        "dwell_time": 15.0,
         "num_cycles": 10.0
       }
     },
