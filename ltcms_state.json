@@ -265,9 +265,9 @@
       "name": "Thermotron SE-600 Chamber",
       "type": "TEMP_HUMIDITY",
       "location": "",
-      "status": "Idle",
+      "status": "Maintenance",
       "load_percentage": 0,
-      "last_updated": "2025-08-01 05:19:22.481984",
+      "last_updated": "2025-08-01 08:32:07.874412",
       "parameters": {
         "ambient_temperature": 25.0,
         "relative_humidity": 50.0
