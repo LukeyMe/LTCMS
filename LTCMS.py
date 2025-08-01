@@ -485,6 +485,119 @@ def add_equipment_modal():
             st.session_state.show_add_equipment = False
             st.rerun()
 
+# -------------- Modal: All Schedules View --------------------
+@st.dialog("All Schedules & Requests")
+def all_schedules_modal():
+    st.markdown("### 📋 Complete Schedule History")
+    
+    # Get all schedules including completed ones
+    all_schedules = []
+    for eq_id, schedules in st.session_state.schedules.items():
+        for schedule in schedules:
+            schedule_data = schedule.copy()
+            schedule_data['equipment_id'] = eq_id
+            all_schedules.append(schedule_data)
+    
+    # Add completed schedules from a hypothetical completed_schedules storage
+    # (In real implementation, you'd want to store completed schedules separately)
+    
+    if not all_schedules:
+        st.info("No schedules found.")
+        if st.button("❌ Close"):
+            st.session_state.show_all_schedules = False
+            st.rerun()
+        return
+    
+    # Filter options
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        status_filter = st.selectbox("Filter by Status", 
+                                   options=['All'] + TEST_STATUS_OPTIONS,
+                                   key="all_schedules_status_filter")
+    with col2:
+        equipment_filter = st.selectbox("Filter by Equipment",
+                                      options=['All'] + list(st.session_state.equipment_data.keys()),
+                                      key="all_schedules_equipment_filter")
+    with col3:
+        user_filter = st.text_input("Filter by User", key="all_schedules_user_filter")
+    with col4:
+        date_filter = st.date_input("Filter by Date", value=None, key="all_schedules_date_filter")
+    
+    # Apply filters
+    filtered_schedules = all_schedules.copy()
+    
+    if status_filter != 'All':
+        filtered_schedules = [s for s in filtered_schedules if s.get('status') == status_filter]
+    
+    if equipment_filter != 'All':
+        filtered_schedules = [s for s in filtered_schedules if s.get('equipment_id') == equipment_filter]
+    
+    if user_filter:
+        filtered_schedules = [s for s in filtered_schedules if user_filter.lower() in s.get('user', '').lower()]
+    
+    if date_filter:
+        filtered_schedules = [s for s in filtered_schedules 
+                            if s.get('start_date') == date_filter or s.get('end_date') == date_filter]
+    
+    st.markdown(f"#### Showing {len(filtered_schedules)} of {len(all_schedules)} total schedules")
+    
+    if filtered_schedules:
+        # Create DataFrame for display
+        rows = []
+        for schedule in filtered_schedules:
+            row_data = {
+                'Equipment': schedule.get('equipment_id', 'Unknown'),
+                'Test ID': schedule.get('test_id', 'N/A'),
+                'User': schedule.get('user', 'N/A'),
+                'Start Date': schedule.get('start_date', 'N/A'),
+                'End Date': schedule.get('end_date', 'N/A'),
+                'Load %': schedule.get('load_percentage', 0),
+                'Priority': schedule.get('priority', 'Medium'),
+                'Status': schedule.get('status', 'Unknown'),
+                'Created': schedule.get('created_at', 'N/A')
+            }
+            
+            # Add channels or plates if applicable
+            if 'channels' in schedule:
+                row_data['Channels'] = ', '.join(map(str, schedule['channels']))
+            if 'plates' in schedule:
+                row_data['Plates'] = ', '.join(map(str, schedule['plates']))
+            
+            rows.append(row_data)
+        
+        df = pd.DataFrame(rows)
+        st.dataframe(df, use_container_width=True, hide_index=True)
+        
+        # Export options
+        col_export1, col_export2, col_close = st.columns(3)
+        with col_export1:
+            csv = df.to_csv(index=False)
+            st.download_button("📥 Export to CSV", 
+                             data=csv,
+                             file_name=f"ltcms_all_schedules_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                             mime="text/csv",
+                             use_container_width=True)
+        
+        with col_export2:
+            # Export filtered data only
+            if len(filtered_schedules) != len(all_schedules):
+                filtered_csv = df.to_csv(index=False)
+                st.download_button("📥 Export Filtered",
+                                 data=filtered_csv,
+                                 file_name=f"ltcms_filtered_schedules_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                                 mime="text/csv",
+                                 use_container_width=True)
+        
+        with col_close:
+            if st.button("❌ Close", use_container_width=True):
+                st.session_state.show_all_schedules = False
+                st.rerun()
+    else:
+        st.info("No schedules match the current filters.")
+        if st.button("❌ Close"):
+            st.session_state.show_all_schedules = False
+            st.rerun()
+            
 # -------------- Modal: Edit Equipment with editable ID (#3 change) --------------------
 @st.dialog("Edit Equipment")
 def edit_equipment_modal(equipment_id):
