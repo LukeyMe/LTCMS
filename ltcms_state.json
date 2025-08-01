@@ -308,6 +308,18 @@
         "ambient_temperature": 85.0,
         "relative_humidity": 85.0
       }
+    },
+    "SE-600 (47208)": {
+      "name": "Thermotron SE-600 Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Idle",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:24:05.857359",
+      "parameters": {
+        "ambient_temperature": 25.0,
+        "relative_humidity": 50.0
+      }
     }
   },
   "schedules": {
