@@ -18,8 +18,8 @@
       "name": "Vibration Tester",
       "type": "VIBRATION",
       "location": "Building 2",
-      "status": "Running",
-      "load_percentage": 50,
+      "status": "Idle",
+      "load_percentage": 0,
       "last_updated": "2025-07-30 13:57:31.945914",
       "parameters": {
         "amplitude_gs": 5.0,
@@ -365,27 +365,7 @@
   "schedules": {
     "ACS": [],
     "Votsch 1": [],
-    "Vibration": [
-      {
-        "schedule_id": "3047f139-b151-4226-9e52-e393cb395a56",
-        "test_id": "ETR 12345161",
-        "user": "Niel",
-        "start_date": "2025-07-30",
-        "end_date": "2025-08-06",
-        "load_percentage": 50,
-        "priority": "Medium",
-        "description": "",
-        "test_parameters": {
-          "amplitude_gs": 5.0,
-          "frequency_hz": 100.0,
-          "duration": 60.0,
-          "num_axis": 3.0,
-          "sweep_time": 10.0
-        },
-        "status": "In Progress",
-        "created_at": "2025-07-30 13:55:44"
-      }
-    ],
+    "Vibration": [],
     "Votsch 2": [
       {
         "schedule_id": "99fb211c-bf7d-465e-89d5-df7753a7bffe",
