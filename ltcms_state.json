@@ -90,9 +90,9 @@
       "name": "Blue-M Chamber (New)",
       "type": "TEMP_OVENS",
       "location": "",
-      "status": "Idle",
+      "status": "Running",
       "load_percentage": 0,
-      "last_updated": "2025-08-01 00:53:10.785170",
+      "last_updated": "2025-08-01 08:31:38.013806",
       "parameters": {
         "ambient_temperature": 150.0
       }
