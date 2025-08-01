@@ -108,6 +108,17 @@
         "ambient_temperature": 25.0,
         "relative_humidity": 50.0
       }
+    },
+    "Blue-M 1": {
+      "name": "Blue-M Oven",
+      "type": "TEMP_OVENS",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:06:45.991715",
+      "parameters": {
+        "ambient_temperature": 125.0
+      }
     }
   },
   "schedules": {
