@@ -164,6 +164,18 @@
         "ambient_temperature": 85.0,
         "relative_humidity": 85.0
       }
+    },
+    "ACS Chamber": {
+      "name": "ACS Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:11:58.399834",
+      "parameters": {
+        "ambient_temperature": 75.0,
+        "relative_humidity": 0.0
+      }
     }
   },
   "schedules": {
