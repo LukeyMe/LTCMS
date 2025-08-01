@@ -956,6 +956,118 @@ def test_status_modal():
     if st.button("❌ Close", use_container_width=True):
         st.session_state.show_test_status = False
         st.rerun()
+# -------- Equipment Calendar ----------------------
+@st.dialog("Equipment Calendar")
+def calendar_modal(equipment_id):
+    # Defensive check: ensure equipment_id exists
+    if equipment_id not in st.session_state.equipment_data:
+        st.error(f"Equipment ID '{equipment_id}' not found.")
+        if st.button("❌ Close"):
+            st.session_state.show_calendar = None
+            st.rerun()
+        return
+
+    st.markdown(f"### 📅 Calendar View: {equipment_id}")
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        # Calendar controls: month and year selectors
+        today = date.today()
+        selected_month = st.selectbox("Month", 
+                                    options=list(range(1, 13)), 
+                                    index=today.month - 1,
+                                    format_func=lambda x: calendar.month_name[x])
+        selected_year = st.number_input("Year", min_value=2024, max_value=2030, value=today.year)
+        
+        # Generate month calendar (weeks filled with days or 0 for empty)
+        cal = calendar.monthcalendar(selected_year, selected_month)
+        
+        # Collect blocked dates for this equipment in this month
+        blocked_dates = set()
+        if equipment_id in st.session_state.schedules:
+            for schedule in st.session_state.schedules[equipment_id]:
+                if schedule.get('status') in ['Scheduled', 'In Progress']:
+                    start_date = schedule.get('start_date')
+                    end_date = schedule.get('end_date')
+
+                    # Defensive date conversion
+                    try:
+                        if isinstance(start_date, str):
+                            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+                        if isinstance(end_date, str):
+                            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+                    except Exception as e:
+                        st.warning(f"Warning: Could not parse dates for test '{schedule.get('test_id', 'N/A')}': {e}")
+                        continue
+
+                    # Add all dates in the schedule range to blocked_dates
+                    current_date = start_date
+                    while current_date <= end_date:
+                        blocked_dates.add(current_date)
+                        current_date += timedelta(days=1)
+        
+        st.markdown("#### Calendar")
+        # Day headers
+        days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        header_cols = st.columns(7)
+        for i, day in enumerate(days):
+            header_cols[i].markdown(f"**{day}**")
+        
+        # Render calendar grid
+        for week in cal:
+            week_cols = st.columns(7)
+            for i, day in enumerate(week):
+                if day == 0:
+                    # Empty day (padding)
+                    week_cols[i].markdown("")
+                else:
+                    current_date = date(selected_year, selected_month, day)
+                    css_class = "calendar-available"
+                    
+                    if current_date in blocked_dates:
+                        css_class = "calendar-blocked"
+                    elif current_date == today:
+                        css_class = "calendar-today"
+                    
+                    week_cols[i].markdown(
+                        f'<div class="calendar-day {css_class}">{day}</div>', 
+                        unsafe_allow_html=True
+                    )
+    
+    with col2:
+        st.markdown("#### Legend")
+        st.markdown('🟢 **Available** - Open for scheduling')
+        st.markdown('🔴 **Blocked** - Already scheduled')
+        st.markdown('🔵 **Today** - Current date')
+        
+        st.markdown("#### Scheduled Tests This Month")
+        month_schedules = []
+        if equipment_id in st.session_state.schedules:
+            for schedule in st.session_state.schedules[equipment_id]:
+                start_date = schedule.get('start_date')
+                if isinstance(start_date, str):
+                    try:
+                        start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+                    except Exception:
+                        # skip malformed dates
+                        continue
+                
+                if start_date.month == selected_month and start_date.year == selected_year:
+                    month_schedules.append(schedule)
+            
+            if month_schedules:
+                for schedule in month_schedules:
+                    start_day_str = schedule['start_date'].strftime("%d") if hasattr(schedule['start_date'], 'strftime') else str(schedule['start_date'])
+                    st.markdown(f"**{start_day_str}th:** {schedule['test_id']} ({schedule['user']})")
+            else:
+                st.info("No tests scheduled this month")
+    
+    # Close modal button
+    if st.button("❌ Close"):
+        st.session_state.show_calendar = None
+        st.rerun()
+
 
 # -------------- Render Equipment Card with Progression (#4) -----------------------
 def render_equipment_card(eq_id, eq_data):
