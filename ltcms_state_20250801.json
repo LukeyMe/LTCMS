@@ -224,6 +224,66 @@
         "ambient_temperature": 55.0,
         "relative_humidity": 85.0
       }
+    },
+    "SH-241 (MD-375)": {
+      "name": "Espec Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:16:23.857485",
+      "parameters": {
+        "ambient_temperature": 30.0,
+        "relative_humidity": 87.0
+      }
+    },
+    "SE-600 #4 (MD-228)": {
+      "name": "Thermotron SE-600 Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:17:04.002507",
+      "parameters": {
+        "ambient_temperature": -55.0,
+        "relative_humidity": 50.0
+      }
+    },
+    "SE-600 #2 (MD-283)": {
+      "name": "Thermotron SE-600 Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:18:37.062780",
+      "parameters": {
+        "ambient_temperature": 25.0,
+        "relative_humidity": 50.0
+      }
+    },
+    "SE-600 (MD-344) UL": {
+      "name": "Thermotron SE-600 Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Idle",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:19:22.481984",
+      "parameters": {
+        "ambient_temperature": 25.0,
+        "relative_humidity": 50.0
+      }
+    },
+    "Espec ESX-3CA (MD-246)": {
+      "name": "Espec Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:20:49.832851",
+      "parameters": {
+        "ambient_temperature": 85.0,
+        "relative_humidity": 85.0
+      }
     }
   },
   "schedules": {
