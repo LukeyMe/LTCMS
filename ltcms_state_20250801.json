@@ -49,12 +49,12 @@
       "location": "Laboratory Backside",
       "status": "Running",
       "load_percentage": 50,
-      "last_updated": "2025-08-01 06:40:17.776395",
+      "last_updated": "2025-08-01 08:33:23.583450",
       "parameters": {
         "min_temperature": -55.0,
         "max_temperature": 125.0,
-        "dwell_time": 30.0,
-        "num_cycles": 10.0
+        "dwell_time": 15.0,
+        "num_cycles": 1000.0
       }
     },
     "Votsch 3": {
@@ -63,11 +63,11 @@
       "location": "Laboratory Backside",
       "status": "Running",
       "load_percentage": 60,
-      "last_updated": "2025-08-01 06:40:28.648660",
+      "last_updated": "2025-08-01 08:32:58.573127",
       "parameters": {
         "min_temperature": -65.0,
         "max_temperature": 150.0,
-        "dwell_time": 30.0,
+        "dwell_time": 15.0,
         "num_cycles": 10.0
       }
     },
@@ -90,9 +90,9 @@
       "name": "Blue-M Chamber (New)",
       "type": "TEMP_OVENS",
       "location": "",
-      "status": "Idle",
+      "status": "Running",
       "load_percentage": 0,
-      "last_updated": "2025-08-01 00:53:10.785170",
+      "last_updated": "2025-08-01 08:31:38.013806",
       "parameters": {
         "ambient_temperature": 150.0
       }
@@ -101,9 +101,9 @@
       "name": "Thermotron Chamber",
       "type": "TEMP_HUMIDITY",
       "location": "",
-      "status": "Idle",
+      "status": "Running",
       "load_percentage": 0,
-      "last_updated": "2025-08-01 02:56:38.965832",
+      "last_updated": "2025-08-01 08:31:53.244275",
       "parameters": {
         "ambient_temperature": 25.0,
         "relative_humidity": 50.0
@@ -146,9 +146,9 @@
       "name": "Blue-M Oven",
       "type": "TEMP_OVENS",
       "location": "",
-      "status": "Idle",
+      "status": "Running",
       "load_percentage": 0,
-      "last_updated": "2025-08-01 05:09:17.977371",
+      "last_updated": "2025-08-01 08:31:30.006277",
       "parameters": {
         "ambient_temperature": 25.0
       }
@@ -265,9 +265,9 @@
       "name": "Thermotron SE-600 Chamber",
       "type": "TEMP_HUMIDITY",
       "location": "",
-      "status": "Idle",
+      "status": "Maintenance",
       "load_percentage": 0,
-      "last_updated": "2025-08-01 05:19:22.481984",
+      "last_updated": "2025-08-01 08:32:07.874412",
       "parameters": {
         "ambient_temperature": 25.0,
         "relative_humidity": 50.0
@@ -313,9 +313,9 @@
       "name": "Thermotron SE-600 Chamber",
       "type": "TEMP_HUMIDITY",
       "location": "",
-      "status": "Idle",
+      "status": "Running",
       "load_percentage": 0,
-      "last_updated": "2025-08-01 05:24:05.857359",
+      "last_updated": "2025-08-01 08:32:18.536983",
       "parameters": {
         "ambient_temperature": 25.0,
         "relative_humidity": 50.0
