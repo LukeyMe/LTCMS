@@ -176,6 +176,18 @@
         "ambient_temperature": 75.0,
         "relative_humidity": 0.0
       }
+    },
+    "SE-300 (MD-221)": {
+      "name": "Thermotron SE-300 Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:13:00.067575",
+      "parameters": {
+        "ambient_temperature": 65.0,
+        "relative_humidity": 95.0
+      }
     }
   },
   "schedules": {
