@@ -531,10 +531,10 @@ def all_schedules_modal():
     all_schedules = []
     for eq_id, schedules in st.session_state.schedules.items():
         for i, schedule in enumerate(schedules):
-            sched = schedule.copy()
-            sched["equipment_id"] = eq_id
-            sched["schedule_index"] = i
-            all_schedules.append(sched)
+            schedule_data = schedule.copy()
+            schedule_data["equipment_id"] = eq_id
+            schedule_data["schedule_index"] = i
+            all_schedules.append(schedule_data)
 
     if not all_schedules:
         st.info("No schedules found.")
@@ -543,97 +543,96 @@ def all_schedules_modal():
             st.rerun()
         return
 
-    # — Filters (no scrolling here) —
+    # Filter options
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        status_filter = st.selectbox("Filter by Status", ["All"] + TEST_STATUS_OPTIONS)
+        status_filter = st.selectbox("Filter by Status", options=["All"] + TEST_STATUS_OPTIONS)
     with col2:
-        equipment_filter = st.selectbox("Filter by Equipment", ["All"] + list(st.session_state.equipment_data))
+        equipment_filter = st.selectbox("Filter by Equipment", options=["All"] + list(st.session_state.equipment_data.keys()))
     with col3:
         user_filter = st.text_input("Filter by User")
     with col4:
         date_filter = st.date_input("Filter by Date", value=None)
 
     # Apply filters
-    fs = all_schedules
+    filtered_schedules = all_schedules.copy()
     if status_filter != "All":
-        fs = [s for s in fs if s["status"] == status_filter]
+        filtered_schedules = [s for s in filtered_schedules if s.get("status") == status_filter]
     if equipment_filter != "All":
-        fs = [s for s in fs if s["equipment_id"] == equipment_filter]
+        filtered_schedules = [s for s in filtered_schedules if s.get("equipment_id") == equipment_filter]
     if user_filter:
-        fs = [s for s in fs if user_filter.lower() in s.get("user", "").lower()]
+        filtered_schedules = [s for s in filtered_schedules if user_filter.lower() in s.get("user", "").lower()]
     if date_filter:
-        fs = [s for s in fs if s.get("start_date") == date_filter or s.get("end_date") == date_filter]
+        filtered_schedules = [s for s in filtered_schedules if s.get("start_date") == date_filter or s.get("end_date") == date_filter]
 
-    # Build DataFrame
-    rows = []
-    for s in fs:
-        ca = s.get("created_at")
-        if isinstance(ca, datetime):
-            ca = ca.strftime("%Y-%m-%d %H:%M")
-        rows.append({
-            "Equipment": s["equipment_id"],
-            "Test ID": s.get("test_id",""),
-            "User": s.get("user",""),
-            "Start": s.get("start_date",""),
-            "End": s.get("end_date",""),
-            "Status": s.get("status",""),
-            "Load %": s.get("load_percentage",0),
-            "Index": f"{s['equipment_id']}_{s['schedule_index']}"
+    # Prepare dataframe
+    df_data = []
+    for schedule in filtered_schedules:
+        created_at = schedule.get("created_at", "N/A")
+        if isinstance(created_at, datetime):
+            created_at = created_at.strftime("%Y-%m-%d %H:%M")
+        df_data.append({
+            "Equipment": schedule.get("equipment_id", "Unknown"),
+            "Test ID": schedule.get("test_id", "N/A"),
+            "User": schedule.get("user", "N/A"),
+            "Start Date": schedule.get("start_date", "N/A"),
+            "End Date": schedule.get("end_date", "N/A"),
+            "Status": schedule.get("status", "Unknown"),
+            "Load %": schedule.get("load_percentage", 0),
+            "Created": created_at,
+            "Index": f"{schedule['equipment_id']}_{schedule['schedule_index']}"
         })
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame(df_data)
 
-    # — Scrollable table + delete UI —
-    st.markdown(
-        "<div style='height:300px; overflow-y:auto; padding-right:1rem;'>", 
-        unsafe_allow_html=True
-    )
-    st.dataframe(df.drop(columns=["Index"]), height=None)  # height=None lets the wrapping div control it
+    # Display dataframe
+    st.dataframe(df.drop(columns=["Index"]), height=300)
 
-    if fs:
-        key_opts = df["Index"].tolist()
-        sel = st.selectbox(
-            "Delete which schedule?",
-            options=key_opts,
-            format_func=lambda k: f"{df.loc[df['Index']==k,'Equipment'].iat[0]} – {df.loc[df['Index']==k,'Test ID'].iat[0]}"
+    # Select a schedule to delete
+    if filtered_schedules:
+        selected_schedule_key = st.selectbox(
+            "Select a schedule to delete",
+            options=df["Index"],
+            format_func=lambda x: f"{df[df['Index'] == x]['Equipment'].values[0]} - {df[df['Index'] == x]['Test ID'].values[0]}"
         )
-        if st.button("🗑️ Delete Selected"):
-            eq, idx = sel.split("_")
-            idx = int(idx)
-            removed = st.session_state.schedules[eq].pop(idx)
-            # recalc load & status
-            rem_load = sum(s["load_percentage"] for s in st.session_state.schedules[eq])
-            st.session_state.equipment_data[eq]["load_percentage"] = rem_load
-            if not st.session_state.schedules[eq]:
-                st.session_state.equipment_data[eq]["status"] = "Idle"
-            save_app_state()
-            st.success(f"Deleted {removed['test_id']}")
-            st.rerun()
+        if selected_schedule_key:
+            selected_schedule = next(s for s in filtered_schedules if f"{s['equipment_id']}_{s['schedule_index']}" == selected_schedule_key)
+            eq_id = selected_schedule["equipment_id"]
+            i = selected_schedule["schedule_index"]
+            if st.button("🗑️ Delete Selected Schedule"):
+                removed = st.session_state.schedules[eq_id].pop(i)
+                remaining_load = sum(s["load_percentage"] for s in st.session_state.schedules[eq_id])
+                st.session_state.equipment_data[eq_id]["load_percentage"] = remaining_load
+                if not st.session_state.schedules[eq_id]:
+                    st.session_state.equipment_data[eq_id]["status"] = "Idle"
+                save_app_state()
+                st.success(f"Test {removed['test_id']} permanently deleted.")
+                st.rerun()
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # — Export & Close (always visible) —
-    c1, c2, c3 = st.columns(3)
-    with c1:
+    # Export options
+    col_export1, col_export2, col_close = st.columns(3)
+    with col_export1:
+        csv = df.drop(columns=["Index"]).to_csv(index=False)
         st.download_button(
-            "📥 Export All",
-            data=df.drop(columns=["Index"]).to_csv(index=False),
-            file_name=f"all_sched_{datetime.now():%Y%m%d_%H%M%S}.csv",
-            mime="text/csv"
+            "📥 Export to CSV",
+            data=csv,
+            file_name=f"ltcms_all_schedules_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True
         )
-    with c2:
-        if len(fs) != len(all_schedules):
+    with col_export2:
+        if len(filtered_schedules) != len(all_schedules):
+            csv = df.drop(columns=["Index"]).to_csv(index=False)
             st.download_button(
                 "📥 Export Filtered",
-                data=df.drop(columns=["Index"]).to_csv(index=False),
-                file_name=f"filt_sched_{datetime.now():%Y%m%d_%H%M%S}.csv",
-                mime="text/csv"
+                data=csv,
+                file_name=f"ltcms_filtered_schedules_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True
             )
-    with c3:
+    with col_close:
         if st.button("❌ Close", use_container_width=True):
             st.session_state.show_all_schedules = False
             st.rerun()
-
             
 # -------------- Modal: Edit Equipment with editable ID (#3 change) --------------------
 @st.dialog("Edit Equipment")
@@ -893,122 +892,134 @@ def equipment_settings_modal(equipment_id):
 def test_status_modal():
     st.markdown("### 📋 Active Test Status Management")
 
-    # Gather active tests
-    all_active = []
-    for eq_id, schs in st.session_state.schedules.items():
-        for i, s in enumerate(schs):
-            d = s.copy()
-            d["equipment_id"] = eq_id
-            d["schedule_index"] = i
-            d["schedule_id"] = d.get("schedule_id", str(uuid.uuid4()))
-            all_active.append(d)
+    # Gather all active tests
+    all_schedules = []
+    for eq_id, schedules in st.session_state.schedules.items():
+        for i, schedule in enumerate(schedules):
+            schedule_data = schedule.copy()
+            schedule_data['equipment_id'] = eq_id
+            schedule_data['schedule_index'] = i
+            schedule_data['schedule_id'] = schedule.get('schedule_id', str(uuid.uuid4()))  # Ensure unique schedule_id
+            all_schedules.append(schedule_data)
 
-    if not all_active:
-        st.info("No active tests.")
-        if st.button("❌ Close", key="close_ts"):
+    if not all_schedules:
+        st.info("No active tests found.")
+        if st.button("❌ Close", key="close_test_status_modal", use_container_width=True):
             st.session_state.show_test_status = False
             st.rerun()
         return
 
-    # Build DataFrame
-    rows = []
-    for d in all_active:
-        rows.append({
-            "Equipment": d["equipment_id"],
-            "Test ID": d["test_id"],
-            "User": d["user"],
-            "Start": d["start_date"],
-            "End": d["end_date"],
-            "Status": d["status"],
-            "Load %": d["load_percentage"],
-            "Index": d["schedule_id"]
+    # Prepare dataframe for display
+    df_data = []
+    for schedule in all_schedules:
+        df_data.append({
+            "Equipment": schedule["equipment_id"],
+            "Test ID": schedule["test_id"],
+            "User": schedule["user"],
+            "Start Date": str(schedule["start_date"]),
+            "End Date": str(schedule["end_date"]),
+            "Status": schedule["status"],
+            "Load %": schedule["load_percentage"],
+            "Index": schedule["schedule_id"]  # Use schedule_id as unique identifier
         })
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame(df_data)
 
+    # Display dataframe with native scrolling
     st.markdown("#### Active Tests")
+    st.dataframe(df.drop(columns=["Index"]), height=300)  # Height enables scrolling for long lists
 
-    # — Scrollable table + edit/delete UI —
-    st.markdown(
-        "<div style='height:300px; overflow-y:auto; padding-right:1rem;'>", 
-        unsafe_allow_html=True
-    )
-    st.dataframe(df.drop(columns=["Index"]), height=None)
-
-    # pick one
-    opts = [
-        f"{r['Equipment']} – {r['Test ID']} – {r['User']} – {r['Start']} to {r['End']}"
-        for _, r in df.iterrows()
+    # Dropdown to select a test
+    test_options = [
+        f"{s['equipment_id']} - {s['test_id']} - {s['user']} - {s['start_date']} to {s['end_date']}"
+        for s in all_schedules
     ]
-    sel_str = st.selectbox("Select test to manage", opts, key="ts_sel")
-    if sel_str:
-        # find it
-        idx = opts.index(sel_str)
-        sel = all_active[idx]
-        sid, eq, sch_i = sel["schedule_id"], sel["equipment_id"], sel["schedule_index"]
+    selected_test_str = st.selectbox(
+        "Select a test to edit or delete",
+        options=test_options,
+        key="test_status_selectbox"
+    )
 
-        st.markdown("##### Edit Selected")
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            new_tid = st.text_input("Test ID", sel["test_id"], key=f"tid_{sid}")
-        with c2:
-            new_usr = st.text_input("User", sel["user"], key=f"usr_{sid}")
-        with c3:
-            new_ld = st.number_input("Load %", 1, 100, sel["load_percentage"], key=f"ld_{sid}")
+    # Find the selected schedule
+    if selected_test_str:
+        selected_schedule = next(
+            s for s in all_schedules
+            if f"{s['equipment_id']} - {s['test_id']} - {s['user']} - {s['start_date']} to {s['end_date']}" == selected_test_str
+        )
+        schedule_id = selected_schedule["schedule_id"]
+        eq_id = selected_schedule["equipment_id"]
+        i = selected_schedule["schedule_index"]
 
-        c4, c5, c6 = st.columns(3)
-        with c4:
-            new_sd = st.date_input("Start Date", sel["start_date"], key=f"sd_{sid}")
-        with c5:
-            new_ed = st.date_input("End Date", sel["end_date"], key=f"ed_{sid}")
-        with c6:
-            idx_stat = TEST_STATUS_OPTIONS.index(sel["status"]) if sel["status"] in TEST_STATUS_OPTIONS else 0
-            new_st = st.selectbox("Status", TEST_STATUS_OPTIONS, index=idx_stat, key=f"st_{sid}")
+        # Display editing fields with unique keys
+        st.markdown("#### Edit Selected Test")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            new_test_id = st.text_input("Test ID", value=selected_schedule["test_id"], key=f"test_id_{schedule_id}")
+        with col2:
+            new_user = st.text_input("User", value=selected_schedule["user"], key=f"user_{schedule_id}")
+        with col3:
+            new_load = st.number_input("Load %", min_value=1, max_value=100, value=selected_schedule["load_percentage"], key=f"load_{schedule_id}")
 
-        c_save, c_del, _ = st.columns([1,1,3])
-        with c_save:
-            if st.button("💾 Save", key=f"sv_{sid}"):
-                # validate
-                if new_sd > new_ed:
-                    st.error("Start cannot be after End.")
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            start_date = parse_date(selected_schedule["start_date"])
+            new_start_date = st.date_input("Start Date", value=start_date, key=f"start_date_{schedule_id}")
+        with col5:
+            end_date = parse_date(selected_schedule["end_date"])
+            new_end_date = st.date_input("End Date", value=end_date, key=f"end_date_{schedule_id}")
+        with col6:
+            status_idx = TEST_STATUS_OPTIONS.index(selected_schedule["status"]) if selected_schedule["status"] in TEST_STATUS_OPTIONS else 0
+            new_status = st.selectbox("Status", TEST_STATUS_OPTIONS, index=status_idx, key=f"status_{schedule_id}")
+
+        # Action buttons with unique keys
+        col_save, col_delete, _ = st.columns([1, 1, 3])
+        with col_save:
+            if st.button("💾 Save", key=f"save_{schedule_id}"):
+                if not new_test_id or not new_user:
+                    st.error("Please provide Test ID and User.")
+                elif new_start_date > new_end_date:
+                    st.error("Start Date cannot be after End Date.")
                 else:
-                    rec = st.session_state.schedules[eq][sch_i]
-                    rec.update({
-                        "test_id": new_tid,
-                        "user": new_usr,
-                        "load_percentage": new_ld,
-                        "start_date": new_sd,
-                        "end_date": new_ed,
-                        "status": new_st,
-                        "schedule_id": sid
+                    # Update the schedule data
+                    st.session_state.schedules[eq_id][i].update({
+                        "test_id": new_test_id,
+                        "user": new_user,
+                        "start_date": new_start_date,
+                        "end_date": new_end_date,
+                        "status": new_status,
+                        "load_percentage": new_load,
+                        "schedule_id": schedule_id  # Preserve schedule_id
                     })
-                    # recalc load/status
-                    tot = sum(x["load_percentage"] for x in st.session_state.schedules[eq])
-                    st.session_state.equipment_data[eq]["load_percentage"] = min(tot,100)
-                    if new_st in ("Scheduled","In Progress"):
-                        st.session_state.equipment_data[eq]["status"] = "Scheduled"
-                    elif not any(x["status"] in ("Scheduled","In Progress") for x in st.session_state.schedules[eq]):
-                        st.session_state.equipment_data[eq]["status"] = "Idle"
-                    if new_st=="Completed":
+                    # Recalculate equipment load percentage
+                    remaining_load = sum(s["load_percentage"] for s in st.session_state.schedules[eq_id])
+                    st.session_state.equipment_data[eq_id]["load_percentage"] = min(remaining_load, 100)
+                    # Update equipment status if needed
+                    if not any(s["status"] in ["Scheduled", "In Progress"] for s in st.session_state.schedules[eq_id]):
+                        st.session_state.equipment_data[eq_id]["status"] = "Idle"
+                    elif new_status in ["Scheduled", "In Progress"]:
+                        st.session_state.equipment_data[eq_id]["status"] = "Scheduled"
+                    if new_status == "Completed":
                         cleanup_completed_tests()
                     save_app_state()
-                    st.success("Test updated.")
+                    st.success(f"Test {new_test_id} updated successfully!")
                     st.rerun()
 
-        with c_del:
-            if st.button("🗑️ Delete", key=f"dl_{sid}"):
-                removed = st.session_state.schedules[eq].pop(sch_i)
-                tot2 = sum(x["load_percentage"] for x in st.session_state.schedules[eq])
-                st.session_state.equipment_data[eq]["load_percentage"] = tot2
-                if not st.session_state.schedules[eq]:
-                    st.session_state.equipment_data[eq]["status"] = "Idle"
+        with col_delete:
+            if st.button("🗑️ Delete", key=f"delete_{schedule_id}"):
+                # Delete the selected test
+                removed = st.session_state.schedules[eq_id].pop(i)
+                remaining_load = sum(s["load_percentage"] for s in st.session_state.schedules[eq_id])
+                st.session_state.equipment_data[eq_id]["load_percentage"] = remaining_load
+                if not st.session_state.schedules[eq_id]:
+                    st.session_state.equipment_data[eq_id]["status"] = "Idle"
                 save_app_state()
-                st.success("Test deleted.")
+                st.success(f"Test {removed['test_id']} deleted.")
                 st.rerun()
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        st.info("Select a test to edit or delete.")
 
-    # Close always visible
-    if st.button("❌ Close", key="close_ts2", use_container_width=True):
+    # Close button
+    if st.button("❌ Close", key="close_test_status_modal", use_container_width=True):
         st.session_state.show_test_status = False
         st.rerun()
         
