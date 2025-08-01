@@ -296,6 +296,18 @@
         "ambient_temperature": 85.0,
         "relative_humidity": 85.0
       }
+    },
+    "SE-600 (MD-353) (UL)": {
+      "name": "Thermotron SE-600",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:23:32.977841",
+      "parameters": {
+        "ambient_temperature": 85.0,
+        "relative_humidity": 85.0
+      }
     }
   },
   "schedules": {
