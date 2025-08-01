@@ -47,8 +47,8 @@
       "name": "Votsch Thermal Shock Chamber",
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
-      "status": "Idle",
-      "load_percentage": 0,
+      "status": "Scheduled",
+      "load_percentage": 64,
       "last_updated": "2025-07-30 13:32:31.978462",
       "parameters": {
         "min_temperature": -55.0,
@@ -188,6 +188,26 @@
         },
         "status": "In Progress",
         "created_at": "2025-07-30 13:55:44"
+      }
+    ],
+    "Votsch 2": [
+      {
+        "schedule_id": "99fb211c-bf7d-465e-89d5-df7753a7bffe",
+        "test_id": "12346",
+        "user": "rearea",
+        "start_date": "2025-08-01",
+        "end_date": "2025-08-08",
+        "load_percentage": 64,
+        "priority": "Medium",
+        "description": "",
+        "test_parameters": {
+          "min_temperature": -55.0,
+          "max_temperature": 125.0,
+          "dwell_time": 30.0,
+          "num_cycles": 10.0
+        },
+        "status": "Scheduled",
+        "created_at": "2025-08-01 02:57:03"
       }
     ]
   }
