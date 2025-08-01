@@ -42,37 +42,7 @@ st.markdown("""
         display: grid; grid-template-columns: repeat(3, 1fr);
         gap: 10px; margin: 20px 0; padding: 10px;
         border: 1px solid #e0e0e0; border-radius: 10px;
-        background: #fafafa;
-
-    .calendar-day {
-    border: 1px solid #ddd;
-    padding: 10px 5px;
-    margin: 1px;
-    border-radius: 4px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 14px;
-    min-height: 40px;
-    user-select: none;
-    cursor: default;
-}
-
-.calendar-available {
-    background-color: #d4edda; /* greenish */
-    color: #155724;
-}
-
-.calendar-blocked {
-    background-color: #f8d7da; /* reddish */
-    color: #721c24;
-}
-
-.calendar-today {
-    background-color: #bee5eb; /* bluish */
-    color: #0c5460;
-    font-weight: 700;
-    border: 2px solid #0c5460;
-
+        background: #fafafa;   
     }
     .equipment-card {
         border: 2px solid #28a745;
@@ -986,6 +956,7 @@ def test_status_modal():
     if st.button("❌ Close", use_container_width=True):
         st.session_state.show_test_status = False
         st.rerun()
+        
 # -------- Equipment Calendar ----------------------
 @st.dialog("Equipment Calendar")
 def calendar_modal(equipment_id):
@@ -997,6 +968,9 @@ def calendar_modal(equipment_id):
             st.rerun()
         return
 
+    import calendar
+    from datetime import datetime, date, timedelta
+
     st.markdown(f"### 📅 Calendar View: {equipment_id}")
     
     col1, col2 = st.columns([2, 1])
@@ -1004,13 +978,17 @@ def calendar_modal(equipment_id):
     with col1:
         # Calendar controls: month and year selectors
         today = date.today()
-        selected_month = st.selectbox("Month", 
-                                    options=list(range(1, 13)), 
-                                    index=today.month - 1,
-                                    format_func=lambda x: calendar.month_name[x])
-        selected_year = st.number_input("Year", min_value=2024, max_value=2030, value=today.year)
+        selected_month = st.selectbox(
+            "Month", 
+            options=list(range(1, 13)), 
+            index=today.month - 1,
+            format_func=lambda x: calendar.month_name[x]
+        )
+        selected_year = st.number_input(
+            "Year", min_value=2024, max_value=2030, value=today.year
+        )
         
-        # Generate month calendar (weeks filled with days or 0 for empty)
+        # Generate month calendar (weeks with days or zeros)
         cal = calendar.monthcalendar(selected_year, selected_month)
         
         # Collect blocked dates for this equipment in this month
@@ -1031,7 +1009,6 @@ def calendar_modal(equipment_id):
                         st.warning(f"Warning: Could not parse dates for test '{schedule.get('test_id', 'N/A')}': {e}")
                         continue
 
-                    # Add all dates in the schedule range to blocked_dates
                     current_date = start_date
                     while current_date <= end_date:
                         blocked_dates.add(current_date)
@@ -1044,25 +1021,39 @@ def calendar_modal(equipment_id):
         for i, day in enumerate(days):
             header_cols[i].markdown(f"**{day}**")
         
-        # Render calendar grid
+        # Helper function to get inline CSS for calendar day boxes
+        def get_inline_style(status):
+            base = (
+                "border:1px solid #ddd; padding:10px 5px; margin:1px; "
+                "border-radius:4px; text-align:center; font-weight:600; font-size:14px; "
+                "min-height:40px; min-width:40px; line-height:40px; user-select:none; cursor:default;"
+            )
+            styles = {
+                "available": "background-color:#d4edda; color:#155724;",
+                "blocked": "background-color:#f8d7da; color:#721c24;",
+                "today":   "background-color:#bee5eb; color:#0c5460; font-weight:700; border:2px solid #0c5460;"
+            }
+            return base + styles.get(status, "")
+
+        # Render calendar grid with inline styles
         for week in cal:
             week_cols = st.columns(7)
             for i, day in enumerate(week):
                 if day == 0:
-                    # Empty day (padding)
-                    week_cols[i].markdown("")
+                    week_cols[i].markdown("")  # empty cell for padding
                 else:
                     current_date = date(selected_year, selected_month, day)
-                    css_class = "calendar-available"
                     
+                    # Determine day status
                     if current_date in blocked_dates:
-                        css_class = "calendar-blocked"
+                        style = get_inline_style("blocked")
                     elif current_date == today:
-                        css_class = "calendar-today"
-                    
+                        style = get_inline_style("today")
+                    else:
+                        style = get_inline_style("available")
+
                     week_cols[i].markdown(
-                        f'<div class="calendar-day {css_class}">{day}</div>', 
-                        unsafe_allow_html=True
+                        f'<div style="{style}">{day}</div>', unsafe_allow_html=True
                     )
     
     with col2:
@@ -1080,7 +1071,6 @@ def calendar_modal(equipment_id):
                     try:
                         start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
                     except Exception:
-                        # skip malformed dates
                         continue
                 
                 if start_date.month == selected_month and start_date.year == selected_year:
@@ -1088,15 +1078,19 @@ def calendar_modal(equipment_id):
             
             if month_schedules:
                 for schedule in month_schedules:
-                    start_day_str = schedule['start_date'].strftime("%d") if hasattr(schedule['start_date'], 'strftime') else str(schedule['start_date'])
+                    start_day_str = (
+                        schedule['start_date'].strftime("%d") 
+                        if hasattr(schedule['start_date'], 'strftime') 
+                        else str(schedule['start_date'])
+                    )
                     st.markdown(f"**{start_day_str}th:** {schedule['test_id']} ({schedule['user']})")
             else:
                 st.info("No tests scheduled this month")
     
-    # Close modal button
     if st.button("❌ Close"):
         st.session_state.show_calendar = None
         st.rerun()
+
 
 
 # -------------- Render Equipment Card with Progression (#4) -----------------------
