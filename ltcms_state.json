@@ -4,7 +4,7 @@
       "name": "ACS Thermal Shock Chamber",
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
-      "status": "Running",
+      "status": "Scheduled",
       "load_percentage": 100,
       "last_updated": "2025-08-01 04:16:44.379151",
       "parameters": {
@@ -369,7 +369,7 @@
         "test_id": "ETR12345",
         "user": "Joel",
         "start_date": "2025-07-30",
-        "end_date": "2025-08-06",
+        "end_date": "2025-08-30",
         "load_percentage": 50,
         "priority": "Medium",
         "description": "",
