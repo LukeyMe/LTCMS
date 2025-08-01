@@ -1249,10 +1249,7 @@ def main():
         st.session_state.cleanup_notification = False
 
 if __name__ == "__main__":
-    main()status,
-                    'load_percentage': 0,
-                    'last_updated': datetime.now()
-                }
+   
                 if equipment_type in EQUIPMENT_GROUPS and 'parameters' in EQUIPMENT_GROUPS[equipment_type]:
                     equipment_data['parameters'] = params
                 if equipment_type == 'PULSE_TESTER':
