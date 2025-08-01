@@ -101,9 +101,9 @@
       "name": "Thermotron Chamber",
       "type": "TEMP_HUMIDITY",
       "location": "",
-      "status": "Idle",
+      "status": "Running",
       "load_percentage": 0,
-      "last_updated": "2025-08-01 02:56:38.965832",
+      "last_updated": "2025-08-01 08:31:53.244275",
       "parameters": {
         "ambient_temperature": 25.0,
         "relative_humidity": 50.0
