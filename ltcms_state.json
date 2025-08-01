@@ -248,6 +248,18 @@
         "ambient_temperature": -55.0,
         "relative_humidity": 50.0
       }
+    },
+    "SE-600 #2 (MD-283)": {
+      "name": "Thermotron SE-600 Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:18:37.062780",
+      "parameters": {
+        "ambient_temperature": 25.0,
+        "relative_humidity": 50.0
+      }
     }
   },
   "schedules": {
