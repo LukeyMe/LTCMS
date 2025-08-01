@@ -105,10 +105,10 @@ st.markdown("""
 div[data-testid="stModal"],
 div[data-testid="stModal"] > div[role="dialog"],
 div[role="dialog"] {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 95vh !important;
-    max-height: 95vh !important;
+    width: 80vw !important;
+    max-width: 180vw !important;
+    height: 80vh !important;
+    max-height: 80vh !important;
     margin: 0 !important;
     padding: 0 !important;
     border-radius: 0 !important;
