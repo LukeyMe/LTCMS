@@ -18,9 +18,6 @@ REPO = "LukeyMe/LTCMS"
 FILE_PATH = "ltcms_state.json"
 BRANCH = "main"
 TOKEN = st.secrets["GITHUB_TOKEN"]
-GITHUB_REPO = "LukeyMe/LTCMS"
-FILE_PATH = "ltcms_state.json"
-GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{FILE_PATH}"
 
 # -------------- Persistent data file -----------------
 DATA_FILE = "ltcms_state.json"
@@ -160,64 +157,23 @@ def load_app_state():
         return {}
 
 def save_app_state():
+    # make a deep copy so we don't mutate session state
     save_state = {
         'equipment_data': copy.deepcopy(st.session_state.equipment_data),
         'schedules': copy.deepcopy(st.session_state.schedules)
     }
-
-    # Convert date and datetime fields to string
+    # convert dates to strings in the copy only
     for eq_id, schedules in save_state['schedules'].items():
         for s in schedules:
             for field in ("start_date", "end_date"):
                 val = s.get(field)
                 if isinstance(val, (date, datetime)):
                     s[field] = val.strftime("%Y-%m-%d")
-            if isinstance(s.get("created_at"), datetime):
-                s["created_at"] = s["created_at"].strftime("%Y-%m-%d %H:%M:%S")
-
-    new_content = json.dumps(save_state, indent=2, default=str)
-    b64_content = base64.b64encode(new_content.encode()).decode()
-
-    # Get the file's SHA (required to update)
-    headers = {"Authorization": f"token {st.secrets['GITHUB_TOKEN']}"}
-    response = requests.get(GITHUB_API_URL, headers=headers)
-    if response.status_code == 200:
-        sha = response.json()["sha"]
-    else:
-        sha = None  # new file
-
-    # Push new content
-    payload = {
-        "message": "Update LTCMS state",
-        "content": b64_content,
-        "branch": "main",
-    }
-    if sha:
-        payload["sha"] = sha
-
-    put_resp = requests.put(GITHUB_API_URL, headers=headers, json=payload)
-    if put_resp.status_code in (200, 201):
-        st.success("State saved to GitHub.")
-    else:
-        st.error(f"Failed to save state: {put_resp.status_code} {put_resp.text}")
-
-    # Prepare content
-    new_content = json.dumps(save_state, indent=2)
-    encoded_content = base64.b64encode(new_content.encode()).decode()
-
-    payload = {
-        "message": "Update LTCMS app state via Streamlit",
-        "content": encoded_content,
-        "sha": sha,
-        "branch": BRANCH
-    }
-
-    r = requests.put(url, headers=headers, data=json.dumps(payload))
-
-    if r.status_code == 200 or r.status_code == 201:
-        st.success("App state saved to GitHub.")
-    else:
-        st.error(f"Failed to save to GitHub: {r.status_code} - {r.text}")
+            # also convert created_at if present
+            if isinstance(s.get('created_at'), datetime):
+                s['created_at'] = s['created_at'].strftime("%Y-%m-%d %H:%M:%S")
+    with open(DATA_FILE, "w") as f:
+        json.dump(save_state, f, indent=2, default=str)
 
 # -------------- Auto-cleanup completed tests -----------------
 def cleanup_completed_tests():
