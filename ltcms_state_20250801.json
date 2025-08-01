@@ -33,8 +33,8 @@
       "name": "Votsch Thermal Shock Chamber",
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
-      "status": "Running",
-      "load_percentage": 10,
+      "status": "Scheduled",
+      "load_percentage": 60,
       "last_updated": "2025-08-01 05:40:52.280240",
       "parameters": {
         "min_temperature": -55.0,
@@ -419,6 +419,96 @@
         },
         "status": "Scheduled",
         "created_at": "2025-08-01 05:42:24"
+      },
+      {
+        "schedule_id": "aa78122d-e73b-4487-a881-58aff41b4bdd",
+        "test_id": "213356",
+        "user": "Ces",
+        "start_date": "2025-07-09",
+        "end_date": "2025-08-23",
+        "load_percentage": 10,
+        "priority": "High",
+        "description": "1000cycles(130 30A) 18 boards single pos",
+        "test_parameters": {
+          "min_temperature": -55.0,
+          "max_temperature": 125.0,
+          "dwell_time": 15.0,
+          "num_cycles": 1000.0
+        },
+        "status": "Scheduled",
+        "created_at": "2025-08-01 05:43:33"
+      },
+      {
+        "schedule_id": "a6d46652-368d-4435-afc2-ef3d48055e5b",
+        "test_id": "211912",
+        "user": "Joel",
+        "start_date": "2025-06-23",
+        "end_date": "2025-08-07",
+        "load_percentage": 10,
+        "priority": "High",
+        "description": "0685055.MXEP(1000cycles) 5 boards ten pos b2b",
+        "test_parameters": {
+          "min_temperature": -55.0,
+          "max_temperature": 125.0,
+          "dwell_time": 15.0,
+          "num_cycles": 1000.0
+        },
+        "status": "Scheduled",
+        "created_at": "2025-08-01 05:44:27"
+      },
+      {
+        "schedule_id": "b3434a0a-5d6b-4950-a4a8-ed22b84c093f",
+        "test_id": "212506",
+        "user": "Joel",
+        "start_date": "2025-06-24",
+        "end_date": "2025-08-08",
+        "load_percentage": 10,
+        "priority": "High",
+        "description": "1000cycles(251 750mA) 5 boards ten pos b2b",
+        "test_parameters": {
+          "min_temperature": -55.0,
+          "max_temperature": 125.0,
+          "dwell_time": 15.0,
+          "num_cycles": 1000.0
+        },
+        "status": "Scheduled",
+        "created_at": "2025-08-01 05:45:50"
+      },
+      {
+        "schedule_id": "b0ae54ca-65a8-41ba-93bf-70058222c730",
+        "test_id": "212916",
+        "user": "Joel",
+        "start_date": "2025-07-21",
+        "end_date": "2025-09-04",
+        "load_percentage": 10,
+        "priority": "High",
+        "description": "1000cycles(883100  for AEC-Q200) 5 boards ten pos b2b",
+        "test_parameters": {
+          "min_temperature": -55.0,
+          "max_temperature": 125.0,
+          "dwell_time": 15.0,
+          "num_cycles": 1000.0
+        },
+        "status": "Scheduled",
+        "created_at": "2025-08-01 05:46:42"
+      },
+      {
+        "schedule_id": "2a66a351-23bc-4f36-9851-ac63b74321c4",
+        "test_id": "213901",
+        "user": "Nathan",
+        "start_date": "2025-07-18",
+        "end_date": "2025-09-01",
+        "load_percentage": 10,
+        "priority": "High",
+        "description": "1000cycles(526 80A long-term) 5 boards ten pos b2b",
+        "test_parameters": {
+          "min_temperature": -55.0,
+          "max_temperature": 125.0,
+          "dwell_time": 15.0,
+          "num_cycles": 1000.0
+        },
+        "status": "Scheduled",
+        "created_at": "2025-08-01 05:48:35"
       }
     ],
     "Vibration": [],
