@@ -5,7 +5,7 @@
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
       "status": "Running",
-      "load_percentage": 0,
+      "load_percentage": 33,
       "last_updated": "2025-08-01 05:38:43.076059",
       "parameters": {
         "min_temperature": -55.0,
@@ -363,7 +363,26 @@
     }
   },
   "schedules": {
-    "ACS": [],
+    "ACS": [
+      {
+        "schedule_id": "5181a926-14b1-4b67-90ee-f2e70d3bab47",
+        "test_id": "213499",
+        "user": "Nathan",
+        "start_date": "2025-07-15",
+        "end_date": "2025-09-03",
+        "load_percentage": 33,
+        "priority": "High",
+        "description": "",
+        "test_parameters": {
+          "min_temperature": -55.0,
+          "max_temperature": 125.0,
+          "dwell_time": 15.0,
+          "num_cycles": 1000.0
+        },
+        "status": "Scheduled",
+        "created_at": "2025-08-01 05:39:44"
+      }
+    ],
     "Votsch 1": [],
     "Vibration": [],
     "Votsch 2": [],
