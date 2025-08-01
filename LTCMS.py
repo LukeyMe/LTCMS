@@ -103,46 +103,15 @@ st.markdown("""
     .status-scheduled { background: #d1ecf1; color: #0c5460; }
     /* Ultra-wide modal styling */
     div[data-testid="stModal"] > div[role="dialog"] {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 95vh !important;
-    max-height: 95vh !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-div[data-testid="stModal"] > div[role="dialog"] > div:first-child {
-    flex-grow: 1;
-    height: 100% !important;
-    overflow-y: auto !important;
-    padding: 20px 40px !important;
-    box-sizing: border-box;
-}
-
-/* Make selectboxes wider */
-[data-baseweb="select"] {
-    min-width: 180px !important;
-    max-width: 280px !important;
-    width: 100% !important;
-}
-
-/* Make buttons a little wider */
-.stButton > button {
-    min-width: 130px !important;
-}
-
-/* Inputs full width */
-input[type="text"], input[type="number"], textarea {
-    width: 100% !important;
-    min-width: 120px !important;
-}
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        height: 95vh !important;
+        max-height: 95vh !important;
+        min-height: 70vh !important;
+        margin: auto !important;
+        padding: 0 !important;
+    }
     .modebar { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
