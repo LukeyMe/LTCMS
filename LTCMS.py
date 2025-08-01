@@ -103,15 +103,14 @@ st.markdown("""
     .status-scheduled { background: #d1ecf1; color: #0c5460; }
     /* Ultra-wide modal styling */
     div[data-testid="stModal"] > div[role="dialog"] {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 100vw !important;
-        height: 95vh !important;
-        max-height: 95vh !important;
-        min-height: 70vh !important;
-        margin: auto !important;
-        padding: 0 !important;
-    }
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 95vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+}
     .modebar { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
