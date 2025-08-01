@@ -584,7 +584,7 @@
           "dwell_time": 15.0,
           "num_cycles": 100.0
         },
-        "status": "Scheduled",
+        "status": "In Progress",
         "created_at": "2025-08-01 05:52:54"
       }
     ],
