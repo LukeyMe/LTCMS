@@ -4,9 +4,9 @@
       "name": "ACS Thermal Shock Chamber",
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
-      "status": "Scheduled",
+      "status": "Running",
       "load_percentage": 66,
-      "last_updated": "2025-08-01 05:38:43.076059",
+      "last_updated": "2025-08-01 06:32:04.608456",
       "parameters": {
         "min_temperature": -55.0,
         "max_temperature": 125.0,
