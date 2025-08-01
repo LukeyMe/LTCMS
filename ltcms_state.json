@@ -33,9 +33,9 @@
       "name": "Votsch Thermal Shock Chamber",
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
-      "status": "Scheduled",
+      "status": "Running",
       "load_percentage": 50,
-      "last_updated": "2025-07-30 13:57:38.228633",
+      "last_updated": "2025-08-01 03:42:57.322587",
       "parameters": {
         "min_temperature": -55.0,
         "max_temperature": 125.0,
