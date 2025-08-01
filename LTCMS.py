@@ -8,11 +8,16 @@ import uuid
 import os
 import json
 import copy
+import base64
+import requests
 
 # -------------- Page configuration -------------------
 st.set_page_config(page_title="LTCMS - Lipa Technical Center", layout="wide", initial_sidebar_state="expanded")
 
-
+REPO = "LukeyMe/LTCMS"
+FILE_PATH = "ltcms_state.json"
+BRANCH = "main"
+TOKEN = st.secrets["GITHUB_TOKEN"]
 
 # -------------- Persistent data file -----------------
 DATA_FILE = "ltcms_state.json"
@@ -121,36 +126,81 @@ st.markdown("""
 
 # -------------- Persistent Storage Utilities -----------------
 def load_app_state():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            state = json.load(f)
-            # convert back to date objects
-            for eq_id, schedules in state.get("schedules", {}).items():
-                for s in schedules:
-                    for field in ("start_date", "end_date"):
-                        if isinstance(s.get(field), str):
+    url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
+    headers = {"Authorization": f"token {TOKEN}"}
+    r = requests.get(url, headers=headers)
+
+    if r.status_code == 200:
+        content = r.json().get("content", "")
+        decoded = base64.b64decode(content).decode("utf-8")
+        state = json.loads(decoded)
+
+        # Convert string dates back to date objects
+        for eq_id, schedules in state.get("schedules", {}).items():
+            for s in schedules:
+                for field in ("start_date", "end_date"):
+                    if isinstance(s.get(field), str):
+                        try:
                             s[field] = datetime.strptime(s[field], "%Y-%m-%d").date()
-            return state
-    return {}
+                        except ValueError:
+                            pass
+                if isinstance(s.get("created_at"), str):
+                    try:
+                        s["created_at"] = datetime.strptime(s["created_at"], "%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        pass
+
+        return state
+
+    else:
+        st.error(f"Failed to load state from GitHub: {r.status_code} - {r.text}")
+        return {}
 
 def save_app_state():
-    # make a deep copy so we don't mutate session state
+    # Create copy to avoid mutating session state
     save_state = {
-        'equipment_data': copy.deepcopy(st.session_state.equipment_data),
-        'schedules': copy.deepcopy(st.session_state.schedules)
+        'equipment_data': copy.deepcopy(st.session_state.get('equipment_data', {})),
+        'schedules': copy.deepcopy(st.session_state.get('schedules', {}))
     }
-    # convert dates to strings in the copy only
+
+    # Convert date/datetime to string
     for eq_id, schedules in save_state['schedules'].items():
         for s in schedules:
             for field in ("start_date", "end_date"):
                 val = s.get(field)
                 if isinstance(val, (date, datetime)):
                     s[field] = val.strftime("%Y-%m-%d")
-            # also convert created_at if present
-            if isinstance(s.get('created_at'), datetime):
-                s['created_at'] = s['created_at'].strftime("%Y-%m-%d %H:%M:%S")
-    with open(DATA_FILE, "w") as f:
-        json.dump(save_state, f, indent=2, default=str)
+            if isinstance(s.get("created_at"), datetime):
+                s["created_at"] = s["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+
+    # Get current file SHA
+    url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}"
+    headers = {"Authorization": f"token {TOKEN}"}
+    r = requests.get(url, headers=headers)
+
+    if r.status_code != 200:
+        st.error("Failed to fetch current GitHub file info.")
+        return
+
+    sha = r.json().get("sha")
+
+    # Prepare content
+    new_content = json.dumps(save_state, indent=2)
+    encoded_content = base64.b64encode(new_content.encode()).decode()
+
+    payload = {
+        "message": "Update LTCMS app state via Streamlit",
+        "content": encoded_content,
+        "sha": sha,
+        "branch": BRANCH
+    }
+
+    r = requests.put(url, headers=headers, data=json.dumps(payload))
+
+    if r.status_code == 200 or r.status_code == 201:
+        st.success("App state saved to GitHub.")
+    else:
+        st.error(f"Failed to save to GitHub: {r.status_code} - {r.text}")
 
 # -------------- Auto-cleanup completed tests -----------------
 def cleanup_completed_tests():
