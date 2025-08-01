@@ -43,6 +43,36 @@ st.markdown("""
         gap: 10px; margin: 20px 0; padding: 10px;
         border: 1px solid #e0e0e0; border-radius: 10px;
         background: #fafafa;
+
+    .calendar-day {
+    border: 1px solid #ddd;
+    padding: 10px 5px;
+    margin: 1px;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    min-height: 40px;
+    user-select: none;
+    cursor: default;
+}
+
+.calendar-available {
+    background-color: #d4edda; /* greenish */
+    color: #155724;
+}
+
+.calendar-blocked {
+    background-color: #f8d7da; /* reddish */
+    color: #721c24;
+}
+
+.calendar-today {
+    background-color: #bee5eb; /* bluish */
+    color: #0c5460;
+    font-weight: 700;
+    border: 2px solid #0c5460;
+
     }
     .equipment-card {
         border: 2px solid #28a745;
