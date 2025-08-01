@@ -12,6 +12,10 @@ import copy
 # -------------- Page configuration -------------------
 st.set_page_config(page_title="LTCMS - Lipa Technical Center", layout="wide", initial_sidebar_state="expanded")
 
+# Define absolute path to the JSON file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(BASE_DIR, "ltcms_state.json")
+
 # -------------- Persistent data file -----------------
 DATA_FILE = "ltcms_state.json"
 
@@ -120,35 +124,57 @@ st.markdown("""
 # -------------- Persistent Storage Utilities -----------------
 def load_app_state():
     if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            state = json.load(f)
-            # convert back to date objects
+        try:
+            with open(DATA_FILE, "r") as f:
+                state = json.load(f)
+
+            # Convert string dates back to date objects
             for eq_id, schedules in state.get("schedules", {}).items():
                 for s in schedules:
                     for field in ("start_date", "end_date"):
                         if isinstance(s.get(field), str):
-                            s[field] = datetime.strptime(s[field], "%Y-%m-%d").date()
+                            try:
+                                s[field] = datetime.strptime(s[field], "%Y-%m-%d").date()
+                            except ValueError:
+                                pass  # Keep as string if format is wrong
+                    if isinstance(s.get("created_at"), str):
+                        try:
+                            s["created_at"] = datetime.strptime(s["created_at"], "%Y-%m-%d %H:%M:%S")
+                        except ValueError:
+                            pass
+
             return state
+
+        except Exception as e:
+            print(f"Error loading app state: {e}")
+            return {}
     return {}
 
+
 def save_app_state():
-    # make a deep copy so we don't mutate session state
-    save_state = {
-        'equipment_data': copy.deepcopy(st.session_state.equipment_data),
-        'schedules': copy.deepcopy(st.session_state.schedules)
-    }
-    # convert dates to strings in the copy only
-    for eq_id, schedules in save_state['schedules'].items():
-        for s in schedules:
-            for field in ("start_date", "end_date"):
-                val = s.get(field)
-                if isinstance(val, (date, datetime)):
-                    s[field] = val.strftime("%Y-%m-%d")
-            # also convert created_at if present
-            if isinstance(s.get('created_at'), datetime):
-                s['created_at'] = s['created_at'].strftime("%Y-%m-%d %H:%M:%S")
-    with open(DATA_FILE, "w") as f:
-        json.dump(save_state, f, indent=2, default=str)
+    try:
+        # Make a deep copy to avoid mutating session state
+        save_state = {
+            'equipment_data': copy.deepcopy(st.session_state.get('equipment_data', {})),
+            'schedules': copy.deepcopy(st.session_state.get('schedules', {}))
+        }
+
+        # Convert dates and datetimes to strings
+        for eq_id, schedules in save_state['schedules'].items():
+            for s in schedules:
+                for field in ("start_date", "end_date"):
+                    val = s.get(field)
+                    if isinstance(val, (date, datetime)):
+                        s[field] = val.strftime("%Y-%m-%d")
+                if isinstance(s.get("created_at"), datetime):
+                    s["created_at"] = s["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+
+        with open(DATA_FILE, "w") as f:
+            json.dump(save_state, f, indent=2)
+
+    except Exception as e:
+        print(f"Error saving app state: {e}")
+
 
 # -------------- Auto-cleanup completed tests -----------------
 def cleanup_completed_tests():
