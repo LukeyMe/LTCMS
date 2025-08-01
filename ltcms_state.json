@@ -62,7 +62,7 @@
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
       "status": "Scheduled",
-      "load_percentage": 10,
+      "load_percentage": 60,
       "last_updated": "2025-08-01 03:42:49.169870",
       "parameters": {
         "min_temperature": -65.0,
@@ -550,6 +550,24 @@
         },
         "status": "Scheduled",
         "created_at": "2025-08-01 05:50:54"
+      },
+      {
+        "schedule_id": "18f0d3de-7e90-4bd8-9ea2-9643574fc63b",
+        "test_id": "213068",
+        "user": "Ces",
+        "start_date": "2025-06-30",
+        "end_date": "2025-08-14",
+        "load_percentage": 50,
+        "priority": "High",
+        "description": "1000cycles(0437002.WRA,011028 Bohong CG ) 12 boards single pos",
+        "test_parameters": {
+          "min_temperature": -55.0,
+          "max_temperature": 150.0,
+          "dwell_time": 15.0,
+          "num_cycles": 1000.0
+        },
+        "status": "Scheduled",
+        "created_at": "2025-08-01 05:51:59"
       }
     ],
     "BMNew": []
