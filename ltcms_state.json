@@ -346,6 +346,20 @@
         "dwell_time": 30.0,
         "num_cycles": 10.0
       }
+    },
+    "Espec TSA-71S (153003789": {
+      "name": "Espec TS Chamber",
+      "type": "THERMAL_SHOCK",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:27:48.373258",
+      "parameters": {
+        "min_temperature": -40.0,
+        "max_temperature": 85.0,
+        "dwell_time": 10.0,
+        "num_cycles": 500.0
+      }
     }
   },
   "schedules": {
