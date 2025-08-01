@@ -146,9 +146,9 @@
       "name": "Blue-M Oven",
       "type": "TEMP_OVENS",
       "location": "",
-      "status": "Idle",
+      "status": "Running",
       "load_percentage": 0,
-      "last_updated": "2025-08-01 05:09:17.977371",
+      "last_updated": "2025-08-01 08:31:30.006277",
       "parameters": {
         "ambient_temperature": 25.0
       }
