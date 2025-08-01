@@ -164,6 +164,66 @@
         "ambient_temperature": 85.0,
         "relative_humidity": 85.0
       }
+    },
+    "ACS Chamber": {
+      "name": "ACS Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:11:58.399834",
+      "parameters": {
+        "ambient_temperature": 75.0,
+        "relative_humidity": 0.0
+      }
+    },
+    "SE-300 (MD-221)": {
+      "name": "Thermotron SE-300 Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:13:00.067575",
+      "parameters": {
+        "ambient_temperature": 65.0,
+        "relative_humidity": 95.0
+      }
+    },
+    "SM5.5C (MD-230)": {
+      "name": "Thermotron SM5.5C Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Idle",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:14:01.325666",
+      "parameters": {
+        "ambient_temperature": 25.0,
+        "relative_humidity": 50.0
+      }
+    },
+    "SM5.5C (MD-231)": {
+      "name": "Thermotron SM5.5C Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:14:39.727161",
+      "parameters": {
+        "ambient_temperature": 125.0,
+        "relative_humidity": 50.0
+      }
+    },
+    "SH-241 (MD-374)": {
+      "name": "Espec Chamber",
+      "type": "TEMP_HUMIDITY",
+      "location": "",
+      "status": "Running",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:15:48.154340",
+      "parameters": {
+        "ambient_temperature": 55.0,
+        "relative_humidity": 85.0
+      }
     }
   },
   "schedules": {
