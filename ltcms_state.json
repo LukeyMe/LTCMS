@@ -5,7 +5,7 @@
       "type": "THERMAL_SHOCK",
       "location": "Laboratory Backside",
       "status": "Scheduled",
-      "load_percentage": 72,
+      "load_percentage": 37,
       "last_updated": "2025-08-01 04:16:44.379151",
       "parameters": {
         "min_temperature": -55.0,
@@ -364,24 +364,6 @@
   },
   "schedules": {
     "ACS": [
-      {
-        "schedule_id": "63be83eb-07b0-4f98-a11f-c8ebf2e1c697",
-        "test_id": "ETR41521512",
-        "user": "weeee",
-        "start_date": "2025-07-30",
-        "end_date": "2025-08-06",
-        "load_percentage": 35,
-        "priority": "Medium",
-        "description": "",
-        "test_parameters": {
-          "min_temperature": -55.0,
-          "max_temperature": 125.0,
-          "dwell_time": 30.0,
-          "num_cycles": 10.0
-        },
-        "status": "In Progress",
-        "created_at": "2025-07-30 12:40:38.982739"
-      },
       {
         "schedule_id": "68b23254-fd8e-4d6a-8c67-119e252e3313",
         "test_id": "ETR 12452521",
