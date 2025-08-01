@@ -49,12 +49,12 @@
       "location": "Laboratory Backside",
       "status": "Running",
       "load_percentage": 50,
-      "last_updated": "2025-08-01 06:40:17.776395",
+      "last_updated": "2025-08-01 08:33:23.583450",
       "parameters": {
         "min_temperature": -55.0,
         "max_temperature": 125.0,
-        "dwell_time": 30.0,
-        "num_cycles": 10.0
+        "dwell_time": 15.0,
+        "num_cycles": 1000.0
       }
     },
     "Votsch 3": {
