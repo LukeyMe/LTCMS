@@ -10,7 +10,6 @@ import json
 import copy
 import base64
 import requests
-import time
 
 # -------------- Page configuration -------------------
 st.set_page_config(page_title="LTCMS - Lipa Technical Center", layout="wide", initial_sidebar_state="expanded")
@@ -20,78 +19,10 @@ FILE_PATH = "ltcms_state.json"
 BRANCH = "main"
 TOKEN = st.secrets["GITHUB_TOKEN"]
 
-# -------------- Persistent Storage Utilities -----------------
-def load_app_state():
-    url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
-    headers = {"Authorization": f"token {TOKEN}"}
-    r = requests.get(url, headers=headers)
+# -------------- Persistent data file -----------------
+DATA_FILE = "ltcms_state.json"
 
-    if r.status_code == 200:
-        content = r.json().get("content", "")
-        decoded = base64.b64decode(content).decode("utf-8")
-        state = json.loads(decoded)
-
-        # Convert string dates back to date objects
-        for eq_id, schedules in state.get("schedules", {}).items():
-            for s in schedules:
-                for field in ("start_date", "end_date"):
-                    if isinstance(s.get(field), str):
-                        try:
-                            s[field] = datetime.strptime(s[field], "%Y-%m-%d").date()
-                        except ValueError:
-                            pass
-                if isinstance(s.get("created_at"), str):
-                    try:
-                        s["created_at"] = datetime.strptime(s["created_at"], "%Y-%m-%d %H:%M:%S")
-                    except ValueError:
-                        pass
-
-        return state
-
-    else:
-        st.error(f"Failed to load state from GitHub: {r.status_code} - {r.text}")
-        return {}
-
-def save_app_state():
-    # make a deep copy so we don't mutate session state
-    save_state = {
-        'equipment_data': copy.deepcopy(st.session_state.equipment_data),
-        'schedules': copy.deepcopy(st.session_state.schedules)
-    }
-    # convert dates to strings in the copy only
-    for eq_id, schedules in save_state['schedules'].items():
-        for s in schedules:
-            for field in ("start_date", "end_date"):
-                val = s.get(field)
-                if isinstance(val, (date, datetime)):
-                    s[field] = val.strftime("%Y-%m-%d")
-            # also convert created_at if present
-            if isinstance(s.get('created_at'), datetime):
-                s['created_at'] = s['created_at'].strftime("%Y-%m-%d %H:%M:%S")
-    # Serialize to JSON
-    new_content = json.dumps(save_state, indent=2, default=str)
-    # Get the current sha of the file on GitHub (required by GitHub API)
-    url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
-    headers = {"Authorization": f"token {TOKEN}"}
-    r = requests.get(url, headers=headers)
-    if r.status_code == 200:
-        sha = r.json().get("sha")
-        if not sha:
-            st.error("Could not get file sha for updating state on GitHub.")
-            return
-        data = {
-            "message": "Update LTCMS state from Streamlit app",
-            "content": base64.b64encode(new_content.encode("utf-8")).decode("utf-8"),
-            "branch": BRANCH,
-            "sha": sha
-        }
-        r_put = requests.put(url, headers=headers, data=json.dumps(data))
-        if r_put.status_code not in (200, 201):
-            st.error(f"Error saving state file to GitHub: {r_put.status_code} - {r_put.text}")
-    else:
-        st.error(f"Failed to get current file sha from GitHub: {r.status_code} - {r.text}")
-
-# -------------- CSS Styling (same as before) ---------------
+# -------------- CSS Styling ---------------
 st.markdown("""
 <style>
     .main > div { padding-top: 1rem; }
@@ -193,6 +124,77 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# -------------- Persistent Storage Utilities -----------------
+def load_app_state():
+    url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
+    headers = {"Authorization": f"token {TOKEN}"}
+    r = requests.get(url, headers=headers)
+
+    if r.status_code == 200:
+        content = r.json().get("content", "")
+        decoded = base64.b64decode(content).decode("utf-8")
+        state = json.loads(decoded)
+
+        # Convert string dates back to date objects
+        for eq_id, schedules in state.get("schedules", {}).items():
+            for s in schedules:
+                for field in ("start_date", "end_date"):
+                    if isinstance(s.get(field), str):
+                        try:
+                            s[field] = datetime.strptime(s[field], "%Y-%m-%d").date()
+                        except ValueError:
+                            pass
+                if isinstance(s.get("created_at"), str):
+                    try:
+                        s["created_at"] = datetime.strptime(s["created_at"], "%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        pass
+
+        return state
+
+    else:
+        st.error(f"Failed to load state from GitHub: {r.status_code} - {r.text}")
+        return {}
+
+def save_app_state():
+    # make a deep copy so we don't mutate session state
+    save_state = {
+        'equipment_data': copy.deepcopy(st.session_state.equipment_data),
+        'schedules': copy.deepcopy(st.session_state.schedules)
+    }
+    # convert dates to strings in the copy only
+    for eq_id, schedules in save_state['schedules'].items():
+        for s in schedules:
+            for field in ("start_date", "end_date"):
+                val = s.get(field)
+                if isinstance(val, (date, datetime)):
+                    s[field] = val.strftime("%Y-%m-%d")
+            # also convert created_at if present
+            if isinstance(s.get('created_at'), datetime):
+                s['created_at'] = s['created_at'].strftime("%Y-%m-%d %H:%M:%S")
+    # Serialize to JSON
+    new_content = json.dumps(save_state, indent=2, default=str)
+    # Get the current sha of the file on GitHub (required by GitHub API)
+    url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}?ref={BRANCH}"
+    headers = {"Authorization": f"token {TOKEN}"}
+    r = requests.get(url, headers=headers)
+    if r.status_code == 200:
+        sha = r.json().get("sha")
+        if not sha:
+            st.error("Could not get file sha for updating state on GitHub.")
+            return
+        data = {
+            "message": "Update LTCMS state from Streamlit app",
+            "content": base64.b64encode(new_content.encode("utf-8")).decode("utf-8"),
+            "branch": BRANCH,
+            "sha": sha
+        }
+        r_put = requests.put(url, headers=headers, data=json.dumps(data))
+        if r_put.status_code not in (200, 201):
+            st.error(f"Error saving state file to GitHub: {r_put.status_code} - {r_put.text}")
+    else:
+        st.error(f"Failed to get current file sha from GitHub: {r.status_code} - {r.text}")
+
 # -------------- Auto-cleanup completed tests -----------------
 def cleanup_completed_tests():
     """Remove completed tests and update equipment load percentages"""
@@ -218,7 +220,7 @@ def cleanup_completed_tests():
                     st.session_state.equipment_data[eq_id]['status'] = 'Idle'
     
     if changes_made:
-        safe_save()
+        save_app_state()
 
 # -------------- Session State Initialization ---------------
 if 'app_state_loaded' not in st.session_state:
@@ -248,7 +250,7 @@ def reset_all_modals():
     st.session_state.show_all_schedules = False
     st.session_state.show_calendar = None
 
-# -------------- Constants and Helpers (same as before) ------------------------
+# -------------- Constants and Helpers ------------------------
 EQUIPMENT_GROUPS = {
     'ALL': {'name': 'All Equipment', 'icon': '🏭'},
     'THERMAL_SHOCK': {
@@ -427,268 +429,29 @@ def add_equipment_modal():
                     'name': equipment_name,
                     'type': equipment_type,
                     'location': location,
-                    'status': 'Scheduled',
-                    'created_at': datetime.now()
+                    'status': status,
+                    'load_percentage': 0,
+                    'last_updated': datetime.now()
                 }
-                if equipment['type'] == 'PULSE_TESTER' and selected_channels:
-                    schedule_data['channels'] = selected_channels
-                elif equipment['type'] == 'VIBRATION' and selected_plates:
-                    schedule_data['plates'] = selected_plates
-                
-                st.session_state.schedules[equipment_id].append(schedule_data)
-                current_load = sum(s['load_percentage'] for s in st.session_state.schedules[equipment_id])
-                st.session_state.equipment_data[equipment_id]['load_percentage'] = min(current_load, 100)
-                # Do not downgrade status from Running or Maintenance
-                cur_status = st.session_state.equipment_data[equipment_id]['status']
-                if cur_status not in ['Running', 'Maintenance']:
-                    st.session_state.equipment_data[equipment_id]['status'] = 'Scheduled'
-                if safe_save():
-                    st.success(f"✅ Test {test_id} scheduled successfully!")
-                    st.session_state.show_schedule_form = None
-                    st.rerun()
+                if equipment_type in EQUIPMENT_GROUPS and 'parameters' in EQUIPMENT_GROUPS[equipment_type]:
+                    equipment_data['parameters'] = params
+                if equipment_type == 'PULSE_TESTER':
+                    equipment_data['channels'] = channels
+                elif equipment_type == 'VIBRATION':
+                    equipment_data['plates'] = plates
+                st.session_state.equipment_data[equipment_id] = equipment_data
+                save_app_state()
+                st.success(f"✅ Equipment {equipment_id} added successfully!")
+                st.session_state.show_add_equipment = False
+                st.rerun()
+            elif equipment_id in st.session_state.equipment_data:
+                st.error("Equipment ID already exists!")
             else:
-                st.error("Please fill in Test ID and User name")
-    
-    with col_calendar:
-        if st.button("📅 View Calendar", use_container_width=True):
-            st.session_state.show_calendar = equipment_id
-            st.rerun()
+                st.error("Please fill in Equipment ID and Name")
     
     with col_cancel:
         if st.button("❌ Cancel", use_container_width=True):
-            st.session_state.show_schedule_form = None
-            st.rerun()
-
-# -------------- Modal: Equipment Settings -----------------
-@st.dialog("Equipment Settings")
-def equipment_settings_modal(equipment_id):
-    st.markdown(f"### ⚙️ Settings for {equipment_id}")
-    equipment = st.session_state.equipment_data[equipment_id]
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        new_status = st.selectbox("Equipment Status", ['Idle', 'Running', 'Maintenance', 'Scheduled'], 
-                                 index=['Idle', 'Running', 'Maintenance', 'Scheduled'].index(equipment['status']), 
-                                 key=f"settings_status_{equipment_id}")
-        st.write(f"**Equipment Type:** {EQUIPMENT_GROUPS[equipment['type']]['name']}")
-        st.write(f"**Location:** {equipment['location']}")
-        st.write(f"**Current Load:** {equipment['load_percentage']}%")
-        if equipment['type'] == 'PULSE_TESTER':
-            new_channels = st.number_input("Number of Channels", min_value=1, max_value=32, 
-                                         value=equipment.get('channels', 8), key=f"settings_channels_{equipment_id}")
-        elif equipment['type'] == 'VIBRATION':
-            new_plates = st.number_input("Number of Plates", min_value=1, max_value=10,
-                                       value=equipment.get('plates', 3), key=f"settings_plates_{equipment_id}")
-        else:
-            new_channels = None
-            new_plates = None
-    
-    with col2:
-        if 'parameters' in equipment:
-            st.markdown("### Current Parameters")
-            for param, value in equipment['parameters'].items():
-                label = get_parameter_display_name(param)
-                unit = get_parameter_unit(param)
-                st.write(f"**{label}:** {value} {unit}")
-    
-    with col3:
-        if 'parameters' in equipment:
-            st.markdown("### Edit Parameters")
-            new_params = {}
-            for param, value in equipment['parameters'].items():
-                label = get_parameter_display_name(param)
-                unit = get_parameter_unit(param)
-                label_with_unit = f"{label} ({unit})" if unit else label
-                new_params[param] = st.number_input(label_with_unit, value=float(value), key=f"settings_param_{param}_{equipment_id}")
-        else:
-            new_params = None
-    
-    col_apply, col_cancel = st.columns([1,1])
-    with col_apply:
-        if st.button("✅ Apply Changes", type="primary", use_container_width=True):
-            st.session_state.equipment_data[equipment_id]['status'] = new_status
-            st.session_state.equipment_data[equipment_id]['last_updated'] = datetime.now()
-            if new_channels is not None:
-                st.session_state.equipment_data[equipment_id]['channels'] = new_channels
-            if new_plates is not None:
-                st.session_state.equipment_data[equipment_id]['plates'] = new_plates
-            if new_params is not None:
-                st.session_state.equipment_data[equipment_id]['parameters'] = new_params
-            if safe_save():
-                st.success(f"✅ Settings updated for {equipment_id}")
-                st.session_state.show_settings = None
-                st.rerun()
-    
-    with col_cancel:
-        if st.button("❌ Cancel", use_container_width=True):
-            st.session_state.show_settings = None
-            st.rerun()
-
-# -------------- Modal: Test Status Management ----------------
-@st.dialog("Active Test Status Management")
-def test_status_modal():
-    st.markdown("### 📋 Active Test Status Management")
-    all_schedules = []
-    for eq_id, schedules in st.session_state.schedules.items():
-        for i, schedule in enumerate(schedules):
-            schedule_data = schedule.copy()
-            schedule_data['equipment_id'] = eq_id
-            schedule_data['schedule_index'] = i
-            all_schedules.append(schedule_data)
-    
-    if not all_schedules:
-        st.info("No active tests found.")
-        if st.button("❌ Close", use_container_width=True):
-            st.session_state.show_test_status = False
-            st.rerun()
-        return
-    
-    st.markdown("#### Edit status or delete any test directly below:")
-    
-    # Create a more organized table layout with wider columns
-    cols = st.columns([2, 2, 2, 1.5, 1.5, 1.5, 1, 1])
-    headers = ["Equipment", "Test ID", "User", "Start Date", "End Date", "Status", "Load%", "Action"]
-    for col, header in zip(cols, headers):
-        col.markdown(f"**{header}**")
-    
-    st.markdown("---")
-    
-    for schedule in all_schedules:
-        schedule_id = schedule.get('schedule_id', str(uuid.uuid4()))
-        eq_id = schedule['equipment_id']
-        i = schedule['schedule_index']
-        
-        cols = st.columns([2, 2, 2, 1.5, 1.5, 1.5, 1, 1])
-        with cols[0]: st.write(eq_id)
-        with cols[1]: st.write(schedule['test_id'])
-        with cols[2]: st.write(schedule['user'])
-        with cols[3]: st.write(str(schedule['start_date']))
-        with cols[4]: st.write(str(schedule['end_date']))
-        with cols[5]:
-            status_idx = TEST_STATUS_OPTIONS.index(schedule['status']) if schedule['status'] in TEST_STATUS_OPTIONS else 0
-            new_status = st.selectbox("", TEST_STATUS_OPTIONS, index=status_idx, key=f"status_{schedule_id}_{i}", label_visibility="collapsed")
-        with cols[6]: st.write(f"{schedule['load_percentage']}%")
-        with cols[7]:
-            delete_me = st.button("🗑️", key=f"delete_{schedule_id}_{i}")
-        
-        if new_status != schedule['status']:
-            st.session_state.schedules[eq_id][i]['status'] = new_status
-            
-            # If status changed to completed, trigger cleanup
-            if new_status == 'Completed':
-                cleanup_completed_tests()
-            else:
-                safe_save()
-            
-            st.success(f"Test {schedule['test_id']} status updated to {new_status}!")
-            st.rerun()
-        
-        if delete_me:
-            removed = st.session_state.schedules[eq_id].pop(i)
-            # Recalculate load percentage
-            remaining_load = sum(s['load_percentage'] for s in st.session_state.schedules[eq_id])
-            st.session_state.equipment_data[eq_id]['load_percentage'] = remaining_load
-            
-            if not st.session_state.schedules[eq_id]:
-                st.session_state.equipment_data[eq_id]['status'] = 'Idle'
-            safe_save()
-            st.success(f"Test {removed['test_id']} deleted.")
-            st.rerun()
-        
-        st.markdown("---")
-    
-    if st.button("❌ Close", use_container_width=True):
-        st.session_state.show_test_status = False
-        st.rerun()
-
-# -------------- Modal: Edit Equipment --------------------
-@st.dialog("Edit Equipment")
-def edit_equipment_modal(equipment_id):
-    st.markdown(f"### ✏️ Edit Equipment: {equipment_id}")
-    equipment = st.session_state.equipment_data[equipment_id]
-    
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        new_name = st.text_input("Equipment Name", value=equipment['name'], key="edit_eq_name")
-        new_location = st.text_input("Location", value=equipment['location'], key="edit_eq_location")
-        new_status = st.selectbox("Status", ['Idle', 'Running', 'Maintenance', 'Scheduled'], 
-                                 index=['Idle', 'Running', 'Maintenance', 'Scheduled'].index(equipment['status']), 
-                                 key="edit_eq_status")
-    
-    with col2:
-        st.write(f"**Type:** {EQUIPMENT_GROUPS[equipment['type']]['name']}")
-        st.write(f"**Current Load:** {equipment['load_percentage']}%")
-        if equipment['type'] == 'PULSE_TESTER':
-            new_channels = st.number_input("Number of Channels", min_value=1, max_value=32, 
-                                         value=equipment.get('channels', 8), key="edit_eq_channels")
-        elif equipment['type'] == 'VIBRATION':
-            new_plates = st.number_input("Number of Plates", min_value=1, max_value=10,
-                                       value=equipment.get('plates', 3), key="edit_eq_plates")
-        else:
-            new_channels = None
-            new_plates = None
-    
-    with col3:
-        if 'parameters' in equipment:
-            st.markdown("**Equipment Parameters**")
-            new_params = {}
-            params_list = list(equipment['parameters'].items())
-            half_point = len(params_list) // 2
-            
-            for param, value in params_list[:half_point]:
-                label = get_parameter_display_name(param)
-                unit = get_parameter_unit(param)
-                label_with_unit = f"{label} ({unit})" if unit else label
-                new_params[param] = st.number_input(label_with_unit, value=float(value), key=f"edit_param_{param}_{equipment_id}")
-        else:
-            new_params = None
-    
-    with col4:
-        if 'parameters' in equipment and len(equipment['parameters']) > 1:
-            st.markdown("**Additional Parameters**")
-            params_list = list(equipment['parameters'].items())
-            half_point = len(params_list) // 2
-            
-            for param, value in params_list[half_point:]:
-                label = get_parameter_display_name(param)
-                unit = get_parameter_unit(param)
-                label_with_unit = f"{label} ({unit})" if unit else label
-                new_params[param] = st.number_input(label_with_unit, value=float(value), key=f"edit_param2_{param}_{equipment_id}")
-    
-    col_save, col_delete, col_cancel = st.columns(3)
-    
-    with col_save:
-        if st.button("💾 Save Changes", type="primary", use_container_width=True):
-            st.session_state.equipment_data[equipment_id]['name'] = new_name
-            st.session_state.equipment_data[equipment_id]['location'] = new_location
-            st.session_state.equipment_data[equipment_id]['status'] = new_status
-            st.session_state.equipment_data[equipment_id]['last_updated'] = datetime.now()
-            if new_channels is not None:
-                st.session_state.equipment_data[equipment_id]['channels'] = new_channels
-            if new_plates is not None:
-                st.session_state.equipment_data[equipment_id]['plates'] = new_plates
-            if new_params is not None:
-                st.session_state.equipment_data[equipment_id]['parameters'] = new_params
-            if safe_save():
-                st.success(f"✅ Equipment {equipment_id} updated successfully!")
-                st.session_state.show_edit_equipment = None
-                st.rerun()
-    
-    with col_delete:
-        if st.button("🗑️ Delete Equipment", type="secondary", use_container_width=True):
-            # Remove equipment and its schedules
-            if equipment_id in st.session_state.equipment_data:
-                del st.session_state.equipment_data[equipment_id]
-            if equipment_id in st.session_state.schedules:
-                del st.session_state.schedules[equipment_id]
-            if safe_save():
-                st.success(f"✅ Equipment {equipment_id} deleted successfully!")
-                st.session_state.show_edit_equipment = None
-                st.rerun()
-    
-    with col_cancel:
-        if st.button("❌ Cancel", use_container_width=True):
-            st.session_state.show_edit_equipment = None
+            st.session_state.show_add_equipment = False
             st.rerun()
 
 # -------------- Modal: Calendar View --------------------
@@ -794,6 +557,9 @@ def all_schedules_modal():
             schedule_data['equipment_id'] = eq_id
             all_schedules.append(schedule_data)
     
+    # Add completed schedules from a hypothetical completed_schedules storage
+    # (In real implementation, you'd want to store completed schedules separately)
+    
     if not all_schedules:
         st.info("No schedules found.")
         if st.button("❌ Close"):
@@ -890,6 +656,359 @@ def all_schedules_modal():
         if st.button("❌ Close"):
             st.session_state.show_all_schedules = False
             st.rerun()
+
+# -------------- Modal: Edit Equipment --------------------
+@st.dialog("Edit Equipment")
+def edit_equipment_modal(equipment_id):
+    st.markdown(f"### ✏️ Edit Equipment: {equipment_id}")
+    equipment = st.session_state.equipment_data[equipment_id]
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        new_name = st.text_input("Equipment Name", value=equipment['name'], key="edit_eq_name")
+        new_location = st.text_input("Location", value=equipment['location'], key="edit_eq_location")
+        new_status = st.selectbox("Status", ['Idle', 'Running', 'Maintenance', 'Scheduled'], 
+                                 index=['Idle', 'Running', 'Maintenance', 'Scheduled'].index(equipment['status']), 
+                                 key="edit_eq_status")
+    
+    with col2:
+        st.write(f"**Type:** {EQUIPMENT_GROUPS[equipment['type']]['name']}")
+        st.write(f"**Current Load:** {equipment['load_percentage']}%")
+        if equipment['type'] == 'PULSE_TESTER':
+            new_channels = st.number_input("Number of Channels", min_value=1, max_value=32, 
+                                         value=equipment.get('channels', 8), key="edit_eq_channels")
+        elif equipment['type'] == 'VIBRATION':
+            new_plates = st.number_input("Number of Plates", min_value=1, max_value=10,
+                                       value=equipment.get('plates', 3), key="edit_eq_plates")
+        else:
+            new_channels = None
+            new_plates = None
+    
+    with col3:
+        if 'parameters' in equipment:
+            st.markdown("**Equipment Parameters**")
+            new_params = {}
+            params_list = list(equipment['parameters'].items())
+            half_point = len(params_list) // 2
+            
+            for param, value in params_list[:half_point]:
+                label = get_parameter_display_name(param)
+                unit = get_parameter_unit(param)
+                label_with_unit = f"{label} ({unit})" if unit else label
+                new_params[param] = st.number_input(label_with_unit, value=float(value), key=f"edit_param_{param}_{equipment_id}")
+        else:
+            new_params = None
+    
+    with col4:
+        if 'parameters' in equipment and len(equipment['parameters']) > 1:
+            st.markdown("**Additional Parameters**")
+            params_list = list(equipment['parameters'].items())
+            half_point = len(params_list) // 2
+            
+            for param, value in params_list[half_point:]:
+                label = get_parameter_display_name(param)
+                unit = get_parameter_unit(param)
+                label_with_unit = f"{label} ({unit})" if unit else label
+                new_params[param] = st.number_input(label_with_unit, value=float(value), key=f"edit_param2_{param}_{equipment_id}")
+    
+    col_save, col_delete, col_cancel = st.columns(3)
+    
+    with col_save:
+        if st.button("💾 Save Changes", type="primary", use_container_width=True):
+            st.session_state.equipment_data[equipment_id]['name'] = new_name
+            st.session_state.equipment_data[equipment_id]['location'] = new_location
+            st.session_state.equipment_data[equipment_id]['status'] = new_status
+            st.session_state.equipment_data[equipment_id]['last_updated'] = datetime.now()
+            if new_channels is not None:
+                st.session_state.equipment_data[equipment_id]['channels'] = new_channels
+            if new_plates is not None:
+                st.session_state.equipment_data[equipment_id]['plates'] = new_plates
+            if new_params is not None:
+                st.session_state.equipment_data[equipment_id]['parameters'] = new_params
+            save_app_state()
+            st.success(f"✅ Equipment {equipment_id} updated successfully!")
+            st.session_state.show_edit_equipment = None
+            st.rerun()
+    
+    with col_delete:
+        if st.button("🗑️ Delete Equipment", type="secondary", use_container_width=True):
+            # Remove equipment and its schedules
+            if equipment_id in st.session_state.equipment_data:
+                del st.session_state.equipment_data[equipment_id]
+            if equipment_id in st.session_state.schedules:
+                del st.session_state.schedules[equipment_id]
+            save_app_state()
+            st.success(f"✅ Equipment {equipment_id} deleted successfully!")
+            st.session_state.show_edit_equipment = None
+            st.rerun()
+    
+    with col_cancel:
+        if st.button("❌ Cancel", use_container_width=True):
+            st.session_state.show_edit_equipment = None
+            st.rerun()
+
+# -------------- Modal: Schedule Test ----------------------
+@st.dialog("Schedule Test")
+def schedule_test_modal(equipment_id):
+    st.markdown(f"### 📅 Schedule Test for {equipment_id}")
+    equipment = st.session_state.equipment_data[equipment_id]
+    
+    # Check for date conflicts (for display only, not to prevent scheduling)
+    blocked_dates = set()
+    if equipment_id in st.session_state.schedules:
+        for schedule in st.session_state.schedules[equipment_id]:
+            if schedule['status'] in ['Scheduled', 'In Progress']:
+                start_date = schedule['start_date']
+                end_date = schedule['end_date']
+                
+                # Convert to date objects if they're strings
+                if isinstance(start_date, str):
+                    start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+                if isinstance(end_date, str):
+                    end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+                
+                # Add all dates in the range
+                current_date = start_date
+                while current_date <= end_date:
+                    blocked_dates.add(current_date)
+                    current_date += timedelta(days=1)
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        test_id = st.text_input("Test ID", placeholder="e.g., LTC-2024-001", key="schedule_test_id")
+        user_name = st.text_input("Assigned User", placeholder="Enter user name", key="schedule_user")
+        load_percentage = st.slider("Load Percentage (%)", 1, 100, 50, 1, key="schedule_load")
+    
+    with col2:
+        start_date = st.date_input("Start Date", value=date.today(), key="schedule_start")
+        end_date = st.date_input("End Date", value=date.today()+timedelta(days=7), key="schedule_end")
+        priority = st.selectbox("Priority", options=["Low", "Medium", "High", "Critical"], index=1, key="schedule_priority")
+        
+        # Display conflicts but allow scheduling
+        conflict_dates = []
+        if start_date and end_date:
+            current_date = start_date
+            while current_date <= end_date:
+                if current_date in blocked_dates:
+                    conflict_dates.append(current_date)
+                current_date += timedelta(days=1)
+        
+        if conflict_dates:
+            st.warning(f"⚠️ The following dates have existing schedules: {', '.join([d.strftime('%Y-%m-%d') for d in conflict_dates])}. You can still schedule this test.")
+    
+    with col3:
+        # Channel/Plate selection
+        selected_channels = []
+        selected_plates = []
+        if equipment['type'] == 'PULSE_TESTER':
+            available_channels = list(range(1, equipment.get('channels', 8) + 1))
+            selected_channels = st.multiselect("Select Channels", options=available_channels, default=[1], key="schedule_channels")
+        elif equipment['type'] == 'VIBRATION':
+            available_plates = list(range(1, equipment.get('plates', 3) + 1))
+            selected_plates = st.multiselect("Select Plates", options=available_plates, default=[1], key="schedule_plates")
+    
+    with col4:
+        test_params = {}
+        if equipment['type'] in EQUIPMENT_GROUPS and 'parameters' in EQUIPMENT_GROUPS[equipment['type']]:
+            st.markdown("**Test Parameters**")
+            defaults = EQUIPMENT_GROUPS[equipment['type']]['defaults']
+            for param in EQUIPMENT_GROUPS[equipment['type']]['parameters'][:4]:
+                label = get_parameter_display_name(param)
+                unit = get_parameter_unit(param)
+                label_with_unit = f"Test {label} ({unit})" if unit else f"Test {label}"
+                test_params[param] = st.number_input(label_with_unit, value=float(defaults[param]), key=f"test_param_{param}")
+    
+    test_description = st.text_area("Test Description", placeholder="Enter test conditions and requirements...", key="schedule_description")
+    
+    col_schedule, col_calendar, col_cancel = st.columns(3)
+    with col_schedule:
+        if st.button("📅 Schedule Test", type="primary", use_container_width=True):
+            if test_id and user_name:
+                if equipment_id not in st.session_state.schedules:
+                    st.session_state.schedules[equipment_id] = []
+                schedule_id = str(uuid.uuid4())
+                schedule_data = {
+                    'schedule_id': schedule_id,
+                    'test_id': test_id,
+                    'user': user_name,
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'load_percentage': load_percentage,
+                    'priority': priority,
+                    'description': test_description,
+                    'test_parameters': test_params,
+                    'status': 'Scheduled',
+                    'created_at': datetime.now()
+                }
+                if equipment['type'] == 'PULSE_TESTER' and selected_channels:
+                    schedule_data['channels'] = selected_channels
+                elif equipment['type'] == 'VIBRATION' and selected_plates:
+                    schedule_data['plates'] = selected_plates
+                
+                st.session_state.schedules[equipment_id].append(schedule_data)
+                current_load = sum(s['load_percentage'] for s in st.session_state.schedules[equipment_id])
+                st.session_state.equipment_data[equipment_id]['load_percentage'] = min(current_load, 100)
+                # Do not downgrade status from Running or Maintenance
+                cur_status = st.session_state.equipment_data[equipment_id]['status']
+                if cur_status not in ['Running', 'Maintenance']:
+                    st.session_state.equipment_data[equipment_id]['status'] = 'Scheduled'
+                save_app_state()
+                st.success(f"✅ Test {test_id} scheduled successfully!")
+                st.session_state.show_schedule_form = None
+                st.rerun()
+            else:
+                st.error("Please fill in Test ID and User name")
+    
+    with col_calendar:
+        if st.button("📅 View Calendar", use_container_width=True):
+            st.session_state.show_calendar = equipment_id
+            st.rerun()
+    
+    with col_cancel:
+        if st.button("❌ Cancel", use_container_width=True):
+            st.session_state.show_schedule_form = None
+            st.rerun()
+
+# -------------- Modal: Equipment Settings -----------------
+@st.dialog("Equipment Settings")
+def equipment_settings_modal(equipment_id):
+    st.markdown(f"### ⚙️ Settings for {equipment_id}")
+    equipment = st.session_state.equipment_data[equipment_id]
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        new_status = st.selectbox("Equipment Status", ['Idle', 'Running', 'Maintenance', 'Scheduled'], 
+                                 index=['Idle', 'Running', 'Maintenance', 'Scheduled'].index(equipment['status']), 
+                                 key=f"settings_status_{equipment_id}")
+        st.write(f"**Equipment Type:** {EQUIPMENT_GROUPS[equipment['type']]['name']}")
+        st.write(f"**Location:** {equipment['location']}")
+        st.write(f"**Current Load:** {equipment['load_percentage']}%")
+        if equipment['type'] == 'PULSE_TESTER':
+            new_channels = st.number_input("Number of Channels", min_value=1, max_value=32, 
+                                         value=equipment.get('channels', 8), key=f"settings_channels_{equipment_id}")
+        elif equipment['type'] == 'VIBRATION':
+            new_plates = st.number_input("Number of Plates", min_value=1, max_value=10,
+                                       value=equipment.get('plates', 3), key=f"settings_plates_{equipment_id}")
+        else:
+            new_channels = None
+            new_plates = None
+    
+    with col2:
+        if 'parameters' in equipment:
+            st.markdown("### Current Parameters")
+            for param, value in equipment['parameters'].items():
+                label = get_parameter_display_name(param)
+                unit = get_parameter_unit(param)
+                st.write(f"**{label}:** {value} {unit}")
+    
+    with col3:
+        if 'parameters' in equipment:
+            st.markdown("### Edit Parameters")
+            new_params = {}
+            for param, value in equipment['parameters'].items():
+                label = get_parameter_display_name(param)
+                unit = get_parameter_unit(param)
+                label_with_unit = f"{label} ({unit})" if unit else label
+                new_params[param] = st.number_input(label_with_unit, value=float(value), key=f"settings_param_{param}_{equipment_id}")
+        else:
+            new_params = None
+    
+    col_apply, col_cancel = st.columns([1,1])
+    with col_apply:
+        if st.button("✅ Apply Changes", type="primary", use_container_width=True):
+            st.session_state.equipment_data[equipment_id]['status'] = new_status
+            st.session_state.equipment_data[equipment_id]['last_updated'] = datetime.now()
+            if new_channels is not None:
+                st.session_state.equipment_data[equipment_id]['channels'] = new_channels
+            if new_plates is not None:
+                st.session_state.equipment_data[equipment_id]['plates'] = new_plates
+            if new_params is not None:
+                st.session_state.equipment_data[equipment_id]['parameters'] = new_params
+            save_app_state()
+            st.success(f"✅ Settings updated for {equipment_id}")
+            st.session_state.show_settings = None
+            st.rerun()
+    
+    with col_cancel:
+        if st.button("❌ Cancel", use_container_width=True):
+            st.session_state.show_settings = None
+            st.rerun()
+
+# -------------- Modal: Test Status Management ----------------
+@st.dialog("Active Test Status Management")
+def test_status_modal():
+    st.markdown("### 📋 Active Test Status Management")
+    all_schedules = []
+    for eq_id, schedules in st.session_state.schedules.items():
+        for i, schedule in enumerate(schedules):
+            schedule_data = schedule.copy()
+            schedule_data['equipment_id'] = eq_id
+            schedule_data['schedule_index'] = i
+            all_schedules.append(schedule_data)
+    
+    if not all_schedules:
+        st.info("No active tests found.")
+        if st.button("❌ Close", use_container_width=True):
+            st.session_state.show_test_status = False
+            st.rerun()
+        return
+    
+    st.markdown("#### Edit status or delete any test directly below:")
+    
+    # Create a more organized table layout with wider columns
+    cols = st.columns([2, 2, 2, 1.5, 1.5, 1.5, 1, 1])
+    headers = ["Equipment", "Test ID", "User", "Start Date", "End Date", "Status", "Load%", "Action"]
+    for col, header in zip(cols, headers):
+        col.markdown(f"**{header}**")
+    
+    st.markdown("---")
+    
+    for schedule in all_schedules:
+        schedule_id = schedule.get('schedule_id', str(uuid.uuid4()))
+        eq_id = schedule['equipment_id']
+        i = schedule['schedule_index']
+        
+        cols = st.columns([2, 2, 2, 1.5, 1.5, 1.5, 1, 1])
+        with cols[0]: st.write(eq_id)
+        with cols[1]: st.write(schedule['test_id'])
+        with cols[2]: st.write(schedule['user'])
+        with cols[3]: st.write(str(schedule['start_date']))
+        with cols[4]: st.write(str(schedule['end_date']))
+        with cols[5]:
+            status_idx = TEST_STATUS_OPTIONS.index(schedule['status']) if schedule['status'] in TEST_STATUS_OPTIONS else 0
+            new_status = st.selectbox("", TEST_STATUS_OPTIONS, index=status_idx, key=f"status_{schedule_id}_{i}", label_visibility="collapsed")
+        with cols[6]: st.write(f"{schedule['load_percentage']}%")
+        with cols[7]:
+            delete_me = st.button("🗑️", key=f"delete_{schedule_id}_{i}")
+        
+        if new_status != schedule['status']:
+            st.session_state.schedules[eq_id][i]['status'] = new_status
+            
+            # If status changed to completed, trigger cleanup
+            if new_status == 'Completed':
+                cleanup_completed_tests()
+            
+            save_app_state()
+            st.success(f"Test {schedule['test_id']} status updated to {new_status}!")
+            st.rerun()
+        
+        if delete_me:
+            removed = st.session_state.schedules[eq_id].pop(i)
+            # Recalculate load percentage
+            remaining_load = sum(s['load_percentage'] for s in st.session_state.schedules[eq_id])
+            st.session_state.equipment_data[eq_id]['load_percentage'] = remaining_load
+            
+            if not st.session_state.schedules[eq_id]:
+                st.session_state.equipment_data[eq_id]['status'] = 'Idle'
+            save_app_state()
+            st.success(f"Test {removed['test_id']} deleted.")
+            st.rerun()
+        
+        st.markdown("---")
+    
+    if st.button("❌ Close", use_container_width=True):
+        st.session_state.show_test_status = False
+        st.rerun()
 
 # -------------- Render Equipment Card -----------------------
 def render_equipment_card(eq_id, eq_data):
@@ -1169,17 +1288,7 @@ def main():
                              mime="text/csv")
 
     st.markdown("---")
-    
-    # Add GitHub sync status indicator
-    col_status, col_sync = st.columns([3, 1])
-    with col_status:
-        st.markdown(f"**LTCMS Dashboard Active** | **Last Update:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    with col_sync:
-        if st.button("💾 Sync to GitHub", help="Manually sync data to GitHub"):
-            if safe_save():
-                st.success("✅ Data synced to GitHub successfully!")
-            else:
-                st.error("❌ Failed to sync data to GitHub")
+    st.markdown(f"**LTCMS Dashboard Active** | **Last Update:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     # Auto-cleanup notification
     if st.session_state.get('cleanup_notification'):
@@ -1187,118 +1296,4 @@ def main():
         st.session_state.cleanup_notification = False
 
 if __name__ == "__main__":
-   
-                if equipment_type in EQUIPMENT_GROUPS and 'parameters' in EQUIPMENT_GROUPS[equipment_type]:
-                    equipment_data['parameters'] = params
-                if equipment_type == 'PULSE_TESTER':
-                    equipment_data['channels'] = channels
-                elif equipment_type == 'VIBRATION':
-                    equipment_data['plates'] = plates
-                st.session_state.equipment_data[equipment_id] = equipment_data
-                if safe_save():
-                    st.success(f"✅ Equipment {equipment_id} added successfully!")
-                    st.session_state.show_add_equipment = False
-                    st.rerun()
-            elif equipment_id in st.session_state.equipment_data:
-                st.error("Equipment ID already exists!")
-            else:
-                st.error("Please fill in Equipment ID and Name")
-    
-    with col_cancel:
-        if st.button("❌ Cancel", use_container_width=True):
-            st.session_state.show_add_equipment = False
-            st.rerun()
-
-# [Continue with rest of the modals - schedule_test_modal, etc. - replacing save_app_state() with safe_save()]
-
-# -------------- Modal: Schedule Test ----------------------
-@st.dialog("Schedule Test")
-def schedule_test_modal(equipment_id):
-    st.markdown(f"### 📅 Schedule Test for {equipment_id}")
-    equipment = st.session_state.equipment_data[equipment_id]
-    
-    # Check for date conflicts (for display only, not to prevent scheduling)
-    blocked_dates = set()
-    if equipment_id in st.session_state.schedules:
-        for schedule in st.session_state.schedules[equipment_id]:
-            if schedule['status'] in ['Scheduled', 'In Progress']:
-                start_date = schedule['start_date']
-                end_date = schedule['end_date']
-                
-                # Convert to date objects if they're strings
-                if isinstance(start_date, str):
-                    start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
-                if isinstance(end_date, str):
-                    end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
-                
-                # Add all dates in the range
-                current_date = start_date
-                while current_date <= end_date:
-                    blocked_dates.add(current_date)
-                    current_date += timedelta(days=1)
-    
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        test_id = st.text_input("Test ID", placeholder="e.g., LTC-2024-001", key="schedule_test_id")
-        user_name = st.text_input("Assigned User", placeholder="Enter user name", key="schedule_user")
-        load_percentage = st.slider("Load Percentage (%)", 1, 100, 50, 1, key="schedule_load")
-    
-    with col2:
-        start_date = st.date_input("Start Date", value=date.today(), key="schedule_start")
-        end_date = st.date_input("End Date", value=date.today()+timedelta(days=7), key="schedule_end")
-        priority = st.selectbox("Priority", options=["Low", "Medium", "High", "Critical"], index=1, key="schedule_priority")
-        
-        # Display conflicts but allow scheduling
-        conflict_dates = []
-        if start_date and end_date:
-            current_date = start_date
-            while current_date <= end_date:
-                if current_date in blocked_dates:
-                    conflict_dates.append(current_date)
-                current_date += timedelta(days=1)
-        
-        if conflict_dates:
-            st.warning(f"⚠️ The following dates have existing schedules: {', '.join([d.strftime('%Y-%m-%d') for d in conflict_dates])}. You can still schedule this test.")
-    
-    with col3:
-        # Channel/Plate selection
-        selected_channels = []
-        selected_plates = []
-        if equipment['type'] == 'PULSE_TESTER':
-            available_channels = list(range(1, equipment.get('channels', 8) + 1))
-            selected_channels = st.multiselect("Select Channels", options=available_channels, default=[1], key="schedule_channels")
-        elif equipment['type'] == 'VIBRATION':
-            available_plates = list(range(1, equipment.get('plates', 3) + 1))
-            selected_plates = st.multiselect("Select Plates", options=available_plates, default=[1], key="schedule_plates")
-    
-    with col4:
-        test_params = {}
-        if equipment['type'] in EQUIPMENT_GROUPS and 'parameters' in EQUIPMENT_GROUPS[equipment['type']]:
-            st.markdown("**Test Parameters**")
-            defaults = EQUIPMENT_GROUPS[equipment['type']]['defaults']
-            for param in EQUIPMENT_GROUPS[equipment['type']]['parameters'][:4]:
-                label = get_parameter_display_name(param)
-                unit = get_parameter_unit(param)
-                label_with_unit = f"Test {label} ({unit})" if unit else f"Test {label}"
-                test_params[param] = st.number_input(label_with_unit, value=float(defaults[param]), key=f"test_param_{param}")
-    
-    test_description = st.text_area("Test Description", placeholder="Enter test conditions and requirements...", key="schedule_description")
-    
-    col_schedule, col_calendar, col_cancel = st.columns(3)
-    with col_schedule:
-        if st.button("📅 Schedule Test", type="primary", use_container_width=True):
-            if test_id and user_name:
-                if equipment_id not in st.session_state.schedules:
-                    st.session_state.schedules[equipment_id] = []
-                schedule_id = str(uuid.uuid4())
-                schedule_data = {
-                    'schedule_id': schedule_id,
-                    'test_id': test_id,
-                    'user': user_name,
-                    'start_date': start_date,
-                    'end_date': end_date,
-                    'load_percentage': load_percentage,
-                    'priority': priority,
-                    'description': test_description,
-                    'test_parameters': test_params,
-                    'status':
+    main()
