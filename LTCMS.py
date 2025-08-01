@@ -109,9 +109,9 @@ div[role="dialog"] {
     max-width: 180vw !important;
     height: 80vh !important;
     max-height: 80vh !important;
-    margin: 0 !important;
+    margin: auto !important;
     padding: 0 !important;
-    border-radius: 0 !important;
+    border-radius: 1 !important;
     top: 0 !important;
     left: 0 !important;
     position: fixed !important;
