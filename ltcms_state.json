@@ -85,6 +85,17 @@
         "num_cycles": 1000.0
       },
       "channels": 6
+    },
+    "BMNew": {
+      "name": "Blue-M Chamber (New)",
+      "type": "TEMP_OVENS",
+      "location": "",
+      "status": "Idle",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 00:53:10.785170",
+      "parameters": {
+        "ambient_temperature": 150.0
+      }
     }
   },
   "schedules": {
