@@ -892,114 +892,90 @@ def equipment_settings_modal(equipment_id):
 def test_status_modal():
     st.markdown("### 📋 Active Test Status Management")
 
-    # Gather all active tests
-    all_schedules = []
-    for eq_id, schedules in st.session_state.schedules.items():
-        for i, schedule in enumerate(schedules):
-            schedule_data = schedule.copy()
-            schedule_data['equipment_id'] = eq_id
-            schedule_data['schedule_index'] = i
-            all_schedules.append(schedule_data)
+    # Sample list of active tests (replace with your data)
+    all_schedules = [
+        {"equipment_id": "EQ1", "test_id": "T001", "user": "Alice", "start_date": "2023-10-01", "end_date": "2023-10-05", "status": "Running", "load_percentage": 75, "schedule_index": 0},
+        {"equipment_id": "EQ2", "test_id": "T002", "user": "Bob", "start_date": "2023-10-02", "end_date": "2023-10-06", "status": "Paused", "load_percentage": 50, "schedule_index": 1},
+        # Add more tests...
+    ]
 
     if not all_schedules:
         st.info("No active tests found.")
-        if st.button("❌ Close", use_container_width=True):
+        if st.button("❌ Close"):
             st.session_state.show_test_status = False
             st.rerun()
         return
 
-    # Prepare dataframe for display
-    df_data = []
-    for schedule in all_schedules:
-        df_data.append({
-            "Equipment": schedule["equipment_id"],
-            "Test ID": schedule["test_id"],
-            "User": schedule["user"],
-            "Start Date": schedule["start_date"],
-            "End Date": schedule["end_date"],
-            "Status": schedule["status"],
-            "Load %": schedule["load_percentage"],
-            "Index": f"{schedule['equipment_id']}_{schedule['schedule_index']}"  # Unique identifier
-        })
+    # Create dataframe with a hidden unique identifier
+    df_data = [
+        {
+            "Equipment": s["equipment_id"],
+            "Test ID": s["test_id"],
+            "User": s["user"],
+            "Start Date": s["start_date"],
+            "End Date": s["end_date"],
+            "Status": s["status"],
+            "Load %": s["load_percentage"],
+            "Index": f"{s['equipment_id']}_{s['schedule_index']}"  # Unique key
+        }
+        for s in all_schedules
+    ]
     df = pd.DataFrame(df_data)
 
-    # Display dataframe with native scrolling
-    st.dataframe(df.drop(columns=["Index"]), height=300)  # Height limits the visible area, enables scrolling
-
-    # Select a test to edit
-    selected_test_key = st.selectbox(
-        "Select a test to edit or delete",
-        options=df["Index"],
-        format_func=lambda x: f"{df[df['Index'] == x]['Equipment'].values[0]} - {df[df['Index'] == x]['Test ID'].values[0]}"
+    # Display dataframe without the 'Index' column, enable single-row selection
+    st.markdown("Click on a row to select a test for editing:")
+    selection = st.dataframe(
+        df.drop(columns=["Index"]),
+        height=300,  # Adjustable height for scrolling
+        selection_mode="single-row"
     )
+    selected_rows = selection["selection"]["rows"]
 
-    if selected_test_key:
-        selected_schedule = next(s for s in all_schedules if f"{s['equipment_id']}_{s['schedule_index']}" == selected_test_key)
-        eq_id = selected_schedule["equipment_id"]
-        i = selected_schedule["schedule_index"]
+    # Handle selection
+    if selected_rows:
+        # Get the selected row’s index and unique key
+        selected_row_index = selected_rows[0]
+        selected_test_key = df.iloc[selected_row_index]["Index"]
 
-        # Editing fields
+        # Find the corresponding test
+        selected_schedule = next(
+            s for s in all_schedules
+            if f"{s['equipment_id']}_{s['schedule_index']}" == selected_test_key
+        )
+
+        # Display editing fields
         st.markdown("#### Edit Selected Test")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            new_test_id = st.text_input("Test ID", value=selected_schedule["test_id"])
-        with col2:
-            new_user = st.text_input("User", value=selected_schedule["user"])
-        with col3:
-            new_load = st.number_input("Load %", min_value=1, max_value=100, value=selected_schedule["load_percentage"])
-
-        col4, col5, col6 = st.columns(3)
-        with col4:
-            start_date = parse_date(selected_schedule["start_date"])
-            new_start_date = st.date_input("Start Date", value=start_date)
-        with col5:
-            end_date = parse_date(selected_schedule["end_date"])
-            new_end_date = st.date_input("End Date", value=end_date)
-        with col6:
-            status_idx = TEST_STATUS_OPTIONS.index(selected_schedule["status"]) if selected_schedule["status"] in TEST_STATUS_OPTIONS else 0
-            new_status = st.selectbox("Status", TEST_STATUS_OPTIONS, index=status_idx)
+        new_test_id = st.text_input("Test ID", value=selected_schedule["test_id"])
+        new_user = st.text_input("User", value=selected_schedule["user"])
+        new_start_date = st.text_input("Start Date", value=selected_schedule["start_date"])
+        new_end_date = st.text_input("End Date", value=selected_schedule["end_date"])
+        new_status = st.text_input("Status", value=selected_schedule["status"])
+        new_load = st.number_input("Load %", min_value=0, max_value=100, value=selected_schedule["load_percentage"])
 
         # Action buttons
-        col_save, col_delete, _ = st.columns([1, 1, 3])
-        with col_save:
-            if st.button("💾 Save"):
-                if not new_test_id or not new_user:
-                    st.error("Please provide Test ID and User.")
-                elif new_start_date > new_end_date:
-                    st.error("Start Date cannot be after End Date.")
-                else:
-                    st.session_state.schedules[eq_id][i].update({
-                        "test_id": new_test_id,
-                        "user": new_user,
-                        "start_date": new_start_date,
-                        "end_date": new_end_date,
-                        "status": new_status,
-                        "load_percentage": new_load
-                    })
-                    remaining_load = sum(s["load_percentage"] for s in st.session_state.schedules[eq_id])
-                    st.session_state.equipment_data[eq_id]["load_percentage"] = min(remaining_load, 100)
-                    if not any(s["status"] in ["Scheduled", "In Progress"] for s in st.session_state.schedules[eq_id]):
-                        st.session_state.equipment_data[eq_id]["status"] = "Idle"
-                    elif new_status in ["Scheduled", "In Progress"]:
-                        st.session_state.equipment_data[eq_id]["status"] = "Scheduled"
-                    if new_status == "Completed":
-                        cleanup_completed_tests()
-                    save_app_state()
-                    st.success(f"Test {new_test_id} updated successfully!")
-                    st.rerun()
+        if st.button("💾 Save"):
+            # Logic to update the selected test
+            selected_schedule.update({
+                "test_id": new_test_id,
+                "user": new_user,
+                "start_date": new_start_date,
+                "end_date": new_end_date,
+                "status": new_status,
+                "load_percentage": new_load
+            })
+            st.success("Test updated!")
+            st.rerun()
 
-        with col_delete:
-            if st.button("🗑️ Delete"):
-                removed = st.session_state.schedules[eq_id].pop(i)
-                remaining_load = sum(s["load_percentage"] for s in st.session_state.schedules[eq_id])
-                st.session_state.equipment_data[eq_id]["load_percentage"] = remaining_load
-                if not st.session_state.schedules[eq_id]:
-                    st.session_state.equipment_data[eq_id]["status"] = "Idle"
-                save_app_state()
-                st.success(f"Test {removed['test_id']} deleted.")
-                st.rerun()
+        if st.button("🗑️ Delete"):
+            # Logic to delete the selected test
+            all_schedules.remove(selected_schedule)
+            st.success("Test deleted!")
+            st.rerun()
+    else:
+        st.info("Select a test to edit.")
 
-    if st.button("❌ Close", use_container_width=True):
+    # Close button
+    if st.button("❌ Close"):
         st.session_state.show_test_status = False
         st.rerun()
         
