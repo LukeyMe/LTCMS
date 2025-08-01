@@ -332,6 +332,20 @@
         "ambient_temperature": 125.0,
         "relative_humidity": 50.0
       }
+    },
+    "Espec TSA-71S (153003791)": {
+      "name": "Espec TS cChamber",
+      "type": "THERMAL_SHOCK",
+      "location": "",
+      "status": "Maintenance",
+      "load_percentage": 0,
+      "last_updated": "2025-08-01 05:26:31.151570",
+      "parameters": {
+        "min_temperature": -55.0,
+        "max_temperature": 125.0,
+        "dwell_time": 30.0,
+        "num_cycles": 10.0
+      }
     }
   },
   "schedules": {
