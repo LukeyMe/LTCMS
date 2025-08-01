@@ -579,6 +579,13 @@ def all_schedules_modal():
     if filtered_schedules:
         # Display schedules with delete option
         st.markdown("#### Schedule List")
+
+        # Start scrollable container with inline CSS
+        st.markdown(
+            '<div style="max-height: 60vh; overflow-y: auto; overflow-x: hidden; padding-right: 10px;">',
+            unsafe_allow_html=True
+        )
+
         cols = st.columns([2, 2, 2, 2, 2, 1.5, 1.5, 1.5, 1])
         headers = ["Equipment", "Test ID", "User", "Start Date", "End Date", "Status", "Load%", "Created", "Delete"]
         for col, header in zip(cols, headers):
@@ -634,6 +641,9 @@ def all_schedules_modal():
                 st.markdown(f"<div style='font-size:12px;color:#666;padding-left:20px;'>{' | '.join(extra_info)}</div>", unsafe_allow_html=True)
 
             st.markdown("---")
+
+        # End scrollable container
+        st.markdown('</div>', unsafe_allow_html=True)
 
         # Export options
         col_export1, col_export2, col_close = st.columns(3)
@@ -958,13 +968,19 @@ def test_status_modal():
 
     st.markdown("#### Edit test details below:")
 
-    # Define column widths for better alignment
+    # Define column widths for headers
     cols = st.columns([2, 2, 2, 2, 2, 1.5, 1.5, 1.5, 1])
     headers = ["Equipment", "Test ID", "User", "Start Date", "End Date", "Status", "Load%", "Action", "Save"]
     for col, header in zip(cols, headers):
         col.markdown(f"**{header}**")
 
     st.markdown("---")
+
+    # Start scrollable container with inline CSS
+    st.markdown(
+        '<div style="max-height: 60vh; overflow-y: auto; overflow-x: hidden; padding-right: 10px;">',
+        unsafe_allow_html=True
+    )
 
     for schedule in all_schedules:
         schedule_id = schedule.get('schedule_id', str(uuid.uuid4()))
@@ -1050,6 +1066,9 @@ def test_status_modal():
             st.rerun()
 
         st.markdown("---")
+
+    # End scrollable container
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if st.button("❌ Close", use_container_width=True):
         st.session_state.show_test_status = False
